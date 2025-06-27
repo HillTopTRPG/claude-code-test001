@@ -1,35 +1,83 @@
 import type { NechronicaCharacter } from '../../types/systems/nechronica';
+import { safeGetString, safeGetArray, safeGetArrayString } from '../typeGuards';
+
+// 外部キャラクターシート管理サイトから取得される実際のデータ構造
+interface RawNechronicaApiData {
+  pc_name?: string;
+  characterName?: string;
+  sex?: string;
+  pc_tags?: string;
+  Position_Name?: string;
+  MCLS_Name?: string;
+  SCLS_Name?: string;
+  muscle?: string | number;
+  dexterity?: string | number;
+  sense?: string | number;
+  knowledge?: string | number;
+  exercise?: string | number;
+  information?: string | number;
+  // 部位の生存状態
+  nou_alive?: string;
+  medama_alive?: string;
+  kuchi_alive?: string;
+  migi_ude_alive?: string;
+  hidari_ude_alive?: string;
+  mune_alive?: string;
+  hara_alive?: string;
+  koshi_alive?: string;
+  migi_ashi_alive?: string;
+  hidari_ashi_alive?: string;
+  // スキル
+  Skill_Hakuhei?: string | number;
+  Skill_Syageki?: string | number;
+  Skill_Henni?: string | number;
+  Skill_Kaizou?: string | number;
+  // 配列データ
+  Power_name?: string[];
+  Power_memo?: string[];
+  Power_cost?: (string | number)[];
+  Power_timing?: string[];
+  Power_range?: string[];
+  Power_hantei?: (string | number)[];
+  carma_name?: string[];
+  carma_memo?: string[];
+  roice_name?: string[];
+  roice_memo?: string[];
+  [key: string]: unknown;
+}
 
 /**
  * キャラクターシート管理サイトからのJSONデータをNechronicaCharacter型に変換
  */
-export const parseNechronicaData = (rawData: any): NechronicaCharacter => {
+export const parseNechronicaData = (rawData: RawNechronicaApiData | Record<string, unknown>): NechronicaCharacter => {
   try {
     // データ構造の確認
     console.log('Raw character data:', rawData);
 
     // 基本情報の抽出（実際のデータ構造に基づく）
-    const characterName = rawData.pc_name || rawData.characterName || '名前不明';
-    const sex = rawData.sex || '';
-    const tags = rawData.pc_tags || '';
-    const position = rawData.Position_Name || '';
-    const mainClass = rawData.MCLS_Name || '';
-    const subClass = rawData.SCLS_Name || '';
-    
+    const characterName = safeGetString(rawData.pc_name) || 
+                         safeGetString(rawData.characterName) || 
+                         '名前不明';
+    const sex = safeGetString(rawData.sex);
+    const tags = safeGetString(rawData.pc_tags);
+    const position = safeGetString(rawData.Position_Name);
+    const mainClass = safeGetString(rawData.MCLS_Name);
+    const subClass = safeGetString(rawData.SCLS_Name);
+
     // プロフィール情報の構築
-    const profileParts = [];
+    const profileParts: string[] = [];
     if (sex) profileParts.push(`性別: ${sex}`);
     if (position) profileParts.push(`ポジション: ${position}`);
     if (mainClass) profileParts.push(`メインクラス: ${mainClass}`);
     if (subClass) profileParts.push(`サブクラス: ${subClass}`);
     if (tags) profileParts.push(`タグ: ${tags}`);
-    
+
     const profile = profileParts.join('\n');
 
     // 能力値の抽出（ネクロニカの実際の能力値）
     const abilities = {
       muscle: Number(rawData.muscle) || 0,
-      dexterity: Number(rawData.dexterity) || 0, 
+      dexterity: Number(rawData.dexterity) || 0,
       sense: Number(rawData.sense) || 0,
       knowledge: Number(rawData.knowledge) || 0,
       exercise: Number(rawData.exercise) || 0,
@@ -67,61 +115,18 @@ export const parseNechronicaData = (rawData: any): NechronicaCharacter => {
   }
 };
 
-/**
- * オブジェクトから文字列を抽出するヘルパー関数
- */
-const extractString = (obj: any, keys: string[]): string | undefined => {
-  for (const key of keys) {
-    if (obj && typeof obj === 'object') {
-      // 直接的なキーマッチ
-      if (obj[key] && typeof obj[key] === 'string') {
-        return obj[key].trim();
-      }
-      
-      // ネストされたオブジェクトを検索
-      for (const [objKey, objValue] of Object.entries(obj)) {
-        if (typeof objValue === 'object' && objValue !== null) {
-          const result = extractString(objValue, [key]);
-          if (result) return result;
-        }
-      }
-    }
-  }
-  return undefined;
-};
 
-/**
- * オブジェクトから数値を抽出するヘルパー関数
- */
-const extractNumber = (obj: any, keys: string[]): number | undefined => {
-  for (const key of keys) {
-    if (obj && typeof obj === 'object') {
-      // 直接的なキーマッチ
-      if (obj[key] !== undefined) {
-        const num = Number(obj[key]);
-        if (!isNaN(num)) {
-          return num;
-        }
-      }
-      
-      // ネストされたオブジェクトを検索
-      for (const [objKey, objValue] of Object.entries(obj)) {
-        if (typeof objValue === 'object' && objValue !== null) {
-          const result = extractNumber(objValue, [key]);
-          if (result !== undefined) return result;
-        }
-      }
-    }
-  }
-  return undefined;
-};
 
 /**
  * ネクロニカの部位情報を解析
  */
-const parseNechronicaParts = (rawData: any) => {
-  const parts = [];
-  
+const parseNechronicaParts = (rawData: RawNechronicaApiData | Record<string, unknown>) => {
+  const parts: Array<{
+    name: string;
+    position: 'head' | 'arm' | 'body' | 'leg';
+    damage: number;
+  }> = [];
+
   // ネクロニカの部位構造に基づく
   const partMapping = [
     { key: 'nou_alive', name: '脳', position: 'head' },
@@ -140,7 +145,7 @@ const parseNechronicaParts = (rawData: any) => {
     const isAlive = rawData[part.key];
     parts.push({
       name: part.name,
-      position: part.position,
+      position: part.position as 'head' | 'arm' | 'body' | 'leg',
       damage: isAlive === '1' ? 0 : 1, // 1 = 生存, 0 = 損傷
     });
   });
@@ -149,25 +154,14 @@ const parseNechronicaParts = (rawData: any) => {
 };
 
 /**
- * 部位名から位置を推定
- */
-const mapPartPosition = (partName: string): string => {
-  const name = partName.toLowerCase();
-  
-  if (name.includes('頭') || name.includes('head')) return 'head';
-  if (name.includes('腕') || name.includes('arm') || name.includes('手')) return 'arm';
-  if (name.includes('胴') || name.includes('体') || name.includes('body') || name.includes('chest')) return 'body';
-  if (name.includes('脚') || name.includes('足') || name.includes('leg')) return 'leg';
-  
-  return 'body'; // デフォルト
-};
-
-/**
  * ネクロニカのスキル情報を解析
  */
-const parseNechronicaSkills = (rawData: any) => {
-  const skills = [];
-  
+const parseNechronicaSkills = (rawData: RawNechronicaApiData | Record<string, unknown>) => {
+  const skills: Array<{
+    name: string;
+    level: number;
+  }> = [];
+
   // ネクロニカの基本技能
   const skillMapping = [
     { key: 'Skill_Hakuhei', name: '白兵' },
@@ -188,27 +182,53 @@ const parseNechronicaSkills = (rawData: any) => {
 };
 
 /**
+ * Power_hantei値をattachment値に変換
+ */
+const convertPowerHanteiToAttachment = (hantei: string | number): 'position' | 'main-class' | 'sub-class' | 'head' | 'arm' | 'body' | 'leg' => {
+  const hanteiNum = Number(hantei);
+  switch (hanteiNum) {
+    case 1: return 'position';
+    case 2: return 'main-class';
+    case 3: return 'sub-class';
+    case 4: return 'head';
+    case 5: return 'arm';
+    case 6: return 'body';
+    case 7: return 'leg';
+    default: return 'body'; // デフォルトは胴体
+  }
+};
+
+/**
  * ネクロニカのマニューバ情報を解析
  */
-const parseNechronicaManeuvers = (rawData: any) => {
-  const maneuvers = [];
-  
+const parseNechronicaManeuvers = (rawData: RawNechronicaApiData | Record<string, unknown>) => {
+  const maneuvers: Array<{
+    name: string;
+    cost: number;
+    timing: string;
+    range: string;
+    description: string;
+    attachment: 'position' | 'main-class' | 'sub-class' | 'head' | 'arm' | 'body' | 'leg';
+  }> = [];
+
   // Power_name配列からマニューバを抽出
-  const powerNames = rawData.Power_name || [];
-  const powerMemos = rawData.Power_memo || [];
-  const powerCosts = rawData.Power_cost || [];
-  const powerTimings = rawData.Power_timing || [];
-  const powerRanges = rawData.Power_range || [];
+  const powerNames = safeGetArray<string>(rawData.Power_name);
+  const powerMemos = safeGetArray<string>(rawData.Power_memo);
+  const powerCosts = safeGetArray<string | number>(rawData.Power_cost);
+  const powerTimings = safeGetArray<string>(rawData.Power_timing);
+  const powerRanges = safeGetArray<string>(rawData.Power_range);
+  const powerHanteis = safeGetArray<string | number>(rawData.Power_hantei);
 
   for (let i = 0; i < powerNames.length; i++) {
-    const name = powerNames[i];
-    if (name && name.trim()) {
+    const name = safeGetArrayString(powerNames, i);
+    if (name.trim()) {
       maneuvers.push({
         name: name.trim(),
         cost: Number(powerCosts[i]) || 0,
-        timing: powerTimings[i] || '不明',
-        range: powerRanges[i] || '不明',
-        description: powerMemos[i] || '',
+        timing: safeGetArrayString(powerTimings, i, '不明'),
+        range: safeGetArrayString(powerRanges, i, '不明'),
+        description: safeGetArrayString(powerMemos, i),
+        attachment: convertPowerHanteiToAttachment(powerHanteis[i] || 6), // デフォルトは胴体(6)
       });
     }
   }
@@ -219,19 +239,22 @@ const parseNechronicaManeuvers = (rawData: any) => {
 /**
  * ネクロニカの記憶のカケラを解析
  */
-const parseNechronicaMemories = (rawData: any) => {
-  const memories = [];
-  
+const parseNechronicaMemories = (rawData: RawNechronicaApiData | Record<string, unknown>) => {
+  const memories: Array<{
+    name: string;
+    description: string;
+  }> = [];
+
   // carma_name配列から記憶のカケラを抽出
-  const carmaNames = rawData.carma_name || [];
-  const carmaMemos = rawData.carma_memo || [];
+  const carmaNames = safeGetArray<string>(rawData.carma_name);
+  const carmaMemos = safeGetArray<string>(rawData.carma_memo);
 
   for (let i = 0; i < carmaNames.length; i++) {
-    const name = carmaNames[i];
-    if (name && name.trim()) {
+    const name = safeGetArrayString(carmaNames, i);
+    if (name.trim()) {
       memories.push({
         name: name.trim(),
-        description: carmaMemos[i] || '',
+        description: safeGetArrayString(carmaMemos, i),
       });
     }
   }
@@ -242,19 +265,22 @@ const parseNechronicaMemories = (rawData: any) => {
 /**
  * ネクロニカの宝物/未練を解析
  */
-const parseNechronicaTreasures = (rawData: any) => {
-  const treasures = [];
-  
+const parseNechronicaTreasures = (rawData: RawNechronicaApiData | Record<string, unknown>) => {
+  const treasures: Array<{
+    name: string;
+    description: string;
+  }> = [];
+
   // roice_name配列から宝物を抽出
-  const roiceNames = rawData.roice_name || [];
-  const roiceMemos = rawData.roice_memo || [];
+  const roiceNames = safeGetArray<string>(rawData.roice_name);
+  const roiceMemos = safeGetArray<string>(rawData.roice_memo);
 
   for (let i = 0; i < roiceNames.length; i++) {
-    const name = roiceNames[i];
-    if (name && name.trim()) {
+    const name = safeGetArrayString(roiceNames, i);
+    if (name.trim()) {
       treasures.push({
         name: name.trim(),
-        description: roiceMemos[i] || '',
+        description: safeGetArrayString(roiceMemos, i),
       });
     }
   }

@@ -1,6 +1,23 @@
 import React from 'react';
-import { Card, Row, Col, Statistic, Progress, Tag, Typography, Divider, Space, Tooltip } from 'antd';
-import { UserOutlined, HeartOutlined, ThunderboltOutlined, BookOutlined, EyeOutlined, ToolOutlined } from '@ant-design/icons';
+import {
+  Card,
+  Row,
+  Col,
+  Statistic,
+  Progress,
+  Tag,
+  Typography,
+  Space,
+  Tooltip,
+} from 'antd';
+import {
+  UserOutlined,
+  HeartOutlined,
+  ThunderboltOutlined,
+  BookOutlined,
+  EyeOutlined,
+  ToolOutlined,
+} from '@ant-design/icons';
 import type { NechronicaCharacter } from '../../../types/systems/nechronica';
 
 const { Title, Text, Paragraph } = Typography;
@@ -17,7 +34,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
     sense: <EyeOutlined />,
     knowledge: <BookOutlined />,
     exercise: <HeartOutlined />,
-    information: <UserOutlined />
+    information: <UserOutlined />,
   };
 
   // 能力値の日本語名
@@ -27,22 +44,22 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
     sense: '感覚',
     knowledge: '知識',
     exercise: '運動',
-    information: '情報'
+    information: '情報',
   };
 
   // 部位の色分け
   const getPartColor = (position: string, damage: number) => {
     const colors = {
-      head: '#ff4d4f',    // 赤
-      arm: '#52c41a',     // 緑
-      body: '#1890ff',    // 青
-      leg: '#faad14'      // 黄
+      head: '#ff4d4f', // 赤
+      arm: '#52c41a', // 緑
+      body: '#1890ff', // 青
+      leg: '#faad14', // 黄
     };
-    
+
     if (damage > 0) {
       return '#d9d9d9'; // ダメージがある場合はグレー
     }
-    
+
     return colors[position as keyof typeof colors] || '#d9d9d9';
   };
 
@@ -52,10 +69,51 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
       head: '頭部',
       arm: '腕部',
       body: '胴体',
-      leg: '脚部'
+      leg: '脚部',
     };
     return names[position as keyof typeof names] || position;
   };
+
+  // attachment の日本語名
+  const getAttachmentName = (attachment: string) => {
+    const names = {
+      'position': 'ポジション',
+      'main-class': 'メインクラス',
+      'sub-class': 'サブクラス',
+      'head': '頭部',
+      'arm': '腕部',
+      'body': '胴体',
+      'leg': '脚部',
+    };
+    return names[attachment as keyof typeof names] || attachment;
+  };
+
+  // attachment の色
+  const getAttachmentColor = (attachment: string) => {
+    const colors = {
+      'position': '#722ed1', // 紫
+      'main-class': '#13c2c2', // シアン
+      'sub-class': '#52c41a', // 緑
+      'head': '#ff4d4f', // 赤
+      'arm': '#1890ff', // 青
+      'body': '#faad14', // 黄
+      'leg': '#fa8c16', // オレンジ
+    };
+    return colors[attachment as keyof typeof colors] || '#d9d9d9';
+  };
+
+  // マニューバを attachment でグルーピング
+  const groupedManeuvers = character.maneuvers.reduce((groups, maneuver) => {
+    const attachment = maneuver.attachment;
+    if (!groups[attachment]) {
+      groups[attachment] = [];
+    }
+    groups[attachment].push(maneuver);
+    return groups;
+  }, {} as Record<string, typeof character.maneuvers>);
+
+  // グループの表示順序
+  const attachmentOrder = ['position', 'main-class', 'sub-class', 'head', 'arm', 'body', 'leg'];
 
   return (
     <div style={{ padding: '20px' }}>
@@ -108,7 +166,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
             <Row gutter={[8, 8]}>
               {character.parts.map((part, index) => (
                 <Col xs={12} sm={8} key={index}>
-                  <Tooltip title={`${getPartPositionName(part.position)} - ダメージ: ${part.damage}`}>
+                  <Tooltip
+                    title={`${getPartPositionName(part.position)} - ダメージ: ${part.damage}`}
+                  >
                     <Tag
                       color={getPartColor(part.position, part.damage)}
                       style={{
@@ -116,7 +176,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
                         textAlign: 'center',
                         padding: '8px 4px',
                         marginBottom: '4px',
-                        opacity: part.damage > 0 ? 0.5 : 1
+                        opacity: part.damage > 0 ? 0.5 : 1,
                       }}
                     >
                       {part.name}
@@ -134,7 +194,10 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
           <Card title="スキル" style={{ height: '100%' }}>
             <Space direction="vertical" style={{ width: '100%' }}>
               {character.skills.map((skill, index) => (
-                <div key={index} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div
+                  key={index}
+                  style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                >
                   <Text strong>{skill.name}</Text>
                   <div style={{ display: 'flex', alignItems: 'center', minWidth: '100px' }}>
                     <Progress
@@ -152,24 +215,66 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
         </Col>
 
         {/* マニューバ */}
-        <Col xs={24} lg={12}>
-          <Card title="マニューバ" style={{ height: '100%' }}>
-            <Space direction="vertical" style={{ width: '100%' }} size="middle">
-              {character.maneuvers.map((maneuver, index) => (
-                <Card key={index} size="small" style={{ width: '100%' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                    <Text strong style={{ fontSize: '14px' }}>{maneuver.name}</Text>
-                    <Space>
-                      <Tag color="orange">コスト: {maneuver.cost}</Tag>
-                      <Tag color="green">{maneuver.timing}</Tag>
-                    </Space>
+        <Col xs={24}>
+          <Card title="マニューバ">
+            <Space direction="vertical" style={{ width: '100%' }} size="large">
+              {attachmentOrder
+                .filter(attachment => groupedManeuvers[attachment]?.length > 0)
+                .map((attachment) => (
+                  <div key={attachment}>
+                    <Title 
+                      level={5} 
+                      style={{ 
+                        margin: '0 0 12px 0', 
+                        color: getAttachmentColor(attachment),
+                        borderBottom: `2px solid ${getAttachmentColor(attachment)}`,
+                        paddingBottom: '4px'
+                      }}
+                    >
+                      {getAttachmentName(attachment)}
+                    </Title>
+                    <Row gutter={[16, 16]}>
+                      {groupedManeuvers[attachment].map((maneuver, index) => (
+                        <Col xs={24} md={12} lg={8} key={index}>
+                          <Card 
+                            size="small" 
+                            style={{ 
+                              width: '100%',
+                              borderLeft: `4px solid ${getAttachmentColor(attachment)}`
+                            }}
+                          >
+                            <div
+                              style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'flex-start',
+                                marginBottom: '8px',
+                                flexWrap: 'wrap',
+                                gap: '4px'
+                              }}
+                            >
+                              <Text strong style={{ fontSize: '14px', flex: '1 1 auto' }}>
+                                {maneuver.name}
+                              </Text>
+                              <Space size="small" style={{ flex: '0 0 auto' }}>
+                                <Tag color="orange" size="small">コスト: {maneuver.cost}</Tag>
+                                <Tag color="green" size="small">{maneuver.timing}</Tag>
+                              </Space>
+                            </div>
+                            <div style={{ marginBottom: '4px' }}>
+                              <Text type="secondary" style={{ fontSize: '12px' }}>
+                                射程: {maneuver.range}
+                              </Text>
+                            </div>
+                            <Text style={{ fontSize: '12px', lineHeight: '1.4' }}>
+                              {maneuver.description}
+                            </Text>
+                          </Card>
+                        </Col>
+                      ))}
+                    </Row>
                   </div>
-                  <div style={{ marginBottom: '4px' }}>
-                    <Text type="secondary">射程: {maneuver.range}</Text>
-                  </div>
-                  <Text style={{ fontSize: '12px' }}>{maneuver.description}</Text>
-                </Card>
-              ))}
+                ))}
             </Space>
           </Card>
         </Col>
@@ -181,7 +286,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
               <Space direction="vertical" style={{ width: '100%' }} size="middle">
                 {character.memoryFragments.map((fragment, index) => (
                   <Card key={index} size="small" style={{ width: '100%' }}>
-                    <Text strong style={{ color: '#722ed1' }}>{fragment.name}</Text>
+                    <Text strong style={{ color: '#722ed1' }}>
+                      {fragment.name}
+                    </Text>
                     <Paragraph style={{ margin: '8px 0 0 0', fontSize: '12px' }}>
                       {fragment.description}
                     </Paragraph>
@@ -199,7 +306,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
               <Space direction="vertical" style={{ width: '100%' }} size="middle">
                 {character.treasures.map((treasure, index) => (
                   <Card key={index} size="small" style={{ width: '100%' }}>
-                    <Text strong style={{ color: '#faad14' }}>{treasure.name}</Text>
+                    <Text strong style={{ color: '#faad14' }}>
+                      {treasure.name}
+                    </Text>
                     <Paragraph style={{ margin: '8px 0 0 0', fontSize: '12px' }}>
                       {treasure.description}
                     </Paragraph>

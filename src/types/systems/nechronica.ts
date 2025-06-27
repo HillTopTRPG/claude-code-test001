@@ -3,28 +3,32 @@
 export interface NechronicaCharacter {
   // 基本情報
   name: string;
-  profile?: string;  // ポジション、クラス、性別、タグなどを含む
-  
+  age?: string;
+  height?: string;
+  weight?: string;
+  profile?: string; // ポジション、クラス、性別、タグなどを含む
+  notes?: string;
+
   // 能力値
   abilities: {
-    muscle: number;      // 筋力
-    dexterity: number;   // 器用
-    sense: number;       // 感覚
-    knowledge: number;   // 知識
-    exercise: number;    // 運動
+    muscle: number; // 筋力
+    dexterity: number; // 器用
+    sense: number; // 感覚
+    knowledge: number; // 知識
+    exercise: number; // 運動
     information: number; // 情報
   };
-  
+
   // 部位とパーツ
   parts: NechronicaPart[];
-  
+
   // スキルとマニューバ
   skills: NechronicaSkill[];
   maneuvers: NechronicaManeuver[];
-  
+
   // 記憶の欠片
   memoryFragments: MemoryFragment[];
-  
+
   // 宝物/未練
   treasures: Treasure[];
 }
@@ -47,6 +51,7 @@ export interface NechronicaManeuver {
   timing: string;
   range: string;
   description: string;
+  attachment: 'position' | 'main-class' | 'sub-class' | 'head' | 'arm' | 'body' | 'leg';
 }
 
 export interface MemoryFragment {
