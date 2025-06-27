@@ -93,6 +93,18 @@ const NechronicaPage: React.FC = () => {
     setError(null);
   };
 
+  const handleManeuverEdit = (maneuverIndex: number, updatedManeuver: NechronicaCharacter['maneuvers'][0]) => {
+    if (character) {
+      const updatedCharacter = {
+        ...character,
+        maneuvers: character.maneuvers.map((maneuver, index) =>
+          index === maneuverIndex ? updatedManeuver : maneuver
+        )
+      };
+      setCharacter(updatedCharacter);
+    }
+  };
+
   return (
     <Layout style={{ minHeight: '100vh' }}>
       {isAuthenticated ? (
@@ -114,7 +126,7 @@ const NechronicaPage: React.FC = () => {
                 新しいキャラクターを表示
               </Button>
             </div>
-            <CharacterSheet character={character} />
+            <CharacterSheet character={character} onManeuverEdit={handleManeuverEdit} />
           </div>
         ) : (
           // URL入力画面

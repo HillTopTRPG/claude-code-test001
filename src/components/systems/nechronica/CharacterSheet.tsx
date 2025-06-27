@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Card,
   Row,
@@ -9,6 +9,13 @@ import {
   Typography,
   Space,
   Tooltip,
+  Popover,
+  Button,
+  Form,
+  message,
+  Input,
+  InputNumber,
+  Select,
 } from 'antd';
 import {
   UserOutlined,
@@ -17,6 +24,9 @@ import {
   BookOutlined,
   EyeOutlined,
   ToolOutlined,
+  EditOutlined,
+  SaveOutlined,
+  CloseOutlined,
 } from '@ant-design/icons';
 import type { NechronicaCharacter } from '../../../types/systems/nechronica';
 
@@ -24,9 +34,54 @@ const { Title, Text, Paragraph } = Typography;
 
 interface CharacterSheetProps {
   character: NechronicaCharacter;
+  onManeuverEdit?: (maneuverIndex: number, updatedManeuver: NechronicaCharacter['maneuvers'][0]) => void;
 }
 
-const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
+const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onManeuverEdit }) => {
+  const [editingManeuver, setEditingManeuver] = useState<{
+    maneuver: NechronicaCharacter['maneuvers'][0];
+    index: number;
+  } | null>(null);
+  const [popoverVisible, setPopoverVisible] = useState<number | null>(null);
+  const [form] = Form.useForm();
+
+  // 編集処理のハンドラー
+  const handleEditClick = (maneuver: NechronicaCharacter['maneuvers'][0], maneuverIndex: number) => {
+    setEditingManeuver({ maneuver, index: maneuverIndex });
+    setPopoverVisible(maneuverIndex);
+    form.setFieldsValue({
+      name: maneuver.name,
+      cost: maneuver.cost,
+      timing: maneuver.timing,
+      range: maneuver.range,
+      description: maneuver.description,
+      attachment: maneuver.attachment,
+    });
+  };
+
+  const handleEditCancel = () => {
+    setEditingManeuver(null);
+    form.resetFields();
+    // 編集キャンセル時はポップアップをクリック制御にする
+  };
+
+  const handleEditSubmit = async () => {
+    try {
+      const values = await form.validateFields();
+      if (editingManeuver && onManeuverEdit) {
+        const updatedManeuver = {
+          ...editingManeuver.maneuver,
+          ...values,
+        };
+        onManeuverEdit(editingManeuver.index, updatedManeuver);
+        message.success('マニューバを更新しました');
+      }
+      setPopoverVisible(null);
+      handleEditCancel();
+    } catch (error) {
+      console.error('Validation failed:', error);
+    }
+  };
   // 能力値アイコンの定義
   const abilityIcons = {
     muscle: <ThunderboltOutlined />,
@@ -233,46 +288,175 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
                     >
                       {getAttachmentName(attachment)}
                     </Title>
-                    <Row gutter={[16, 16]}>
-                      {groupedManeuvers[attachment].map((maneuver, index) => (
-                        <Col xs={24} md={12} lg={8} key={index}>
-                          <Card 
-                            size="small" 
-                            style={{ 
-                              width: '100%',
-                              borderLeft: `4px solid ${getAttachmentColor(attachment)}`
+                    <Space wrap style={{ width: '100%' }}>
+                      {groupedManeuvers[attachment].map((maneuver, originalIndex) => {
+                        const maneuverIndex = character.maneuvers.findIndex(m => m === maneuver);
+                        const isEditing = editingManeuver?.index === maneuverIndex;
+                        
+                        const popoverContent = (
+                          <div style={{ maxWidth: '400px' }}>
+                            {isEditing ? (
+                              // 編集フォーム
+                              <Form
+                                form={form}
+                                layout="vertical"
+                                style={{ margin: 0 }}
+                              >
+                                <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <Text strong style={{ fontSize: '14px' }}>マニューバ編集</Text>
+                                  <Space size="small">
+                                    <Button
+                                      icon={<SaveOutlined />}
+                                      size="small"
+                                      type="primary"
+                                      onClick={handleEditSubmit}
+                                    >
+                                      保存
+                                    </Button>
+                                    <Button
+                                      icon={<CloseOutlined />}
+                                      size="small"
+                                      onClick={handleEditCancel}
+                                    >
+                                      キャンセル
+                                    </Button>
+                                  </Space>
+                                </div>
+                                
+                                <Form.Item
+                                  name="name"
+                                  label="マニューバ名"
+                                  rules={[{ required: true, message: 'マニューバ名を入力してください' }]}
+                                  style={{ marginBottom: '12px' }}
+                                >
+                                  <Input size="small" />
+                                </Form.Item>
+
+                                <Form.Item
+                                  name="cost"
+                                  label="コスト"
+                                  rules={[{ required: true, message: 'コストを入力してください' }]}
+                                  style={{ marginBottom: '12px' }}
+                                >
+                                  <InputNumber min={0} size="small" style={{ width: '100%' }} />
+                                </Form.Item>
+
+                                <Form.Item
+                                  name="timing"
+                                  label="タイミング"
+                                  rules={[{ required: true, message: 'タイミングを入力してください' }]}
+                                  style={{ marginBottom: '12px' }}
+                                >
+                                  <Input size="small" />
+                                </Form.Item>
+
+                                <Form.Item
+                                  name="range"
+                                  label="射程"
+                                  rules={[{ required: true, message: '射程を入力してください' }]}
+                                  style={{ marginBottom: '12px' }}
+                                >
+                                  <Input size="small" />
+                                </Form.Item>
+
+                                <Form.Item
+                                  name="attachment"
+                                  label="部位"
+                                  rules={[{ required: true, message: '部位を選択してください' }]}
+                                  style={{ marginBottom: '12px' }}
+                                >
+                                  <Select size="small">
+                                    <Select.Option value="position">ポジション</Select.Option>
+                                    <Select.Option value="main-class">メインクラス</Select.Option>
+                                    <Select.Option value="sub-class">サブクラス</Select.Option>
+                                    <Select.Option value="head">頭部</Select.Option>
+                                    <Select.Option value="arm">腕部</Select.Option>
+                                    <Select.Option value="body">胴体</Select.Option>
+                                    <Select.Option value="leg">脚部</Select.Option>
+                                  </Select>
+                                </Form.Item>
+
+                                <Form.Item
+                                  name="description"
+                                  label="説明"
+                                  style={{ marginBottom: '0' }}
+                                >
+                                  <Input.TextArea rows={3} size="small" />
+                                </Form.Item>
+                              </Form>
+                            ) : (
+                              // 詳細表示
+                              <div>
+                                <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <Text strong style={{ fontSize: '14px' }}>{maneuver.name}</Text>
+                                  {onManeuverEdit && (
+                                    <Button
+                                      icon={<EditOutlined />}
+                                      size="small"
+                                      type="text"
+                                      onClick={() => handleEditClick(maneuver, maneuverIndex)}
+                                      style={{ marginLeft: '8px' }}
+                                    >
+                                      編集
+                                    </Button>
+                                  )}
+                                </div>
+                                <Space style={{ marginBottom: '8px' }}>
+                                  <Tag color="orange" style={{ fontSize: '11px', padding: '2px 6px' }}>
+                                    コスト: {maneuver.cost}
+                                  </Tag>
+                                  <Tag color="green" style={{ fontSize: '11px', padding: '2px 6px' }}>
+                                    {maneuver.timing}
+                                  </Tag>
+                                </Space>
+                                <div style={{ marginBottom: '8px' }}>
+                                  <Text type="secondary" style={{ fontSize: '12px' }}>
+                                    射程: {maneuver.range}
+                                  </Text>
+                                </div>
+                                {maneuver.description && (
+                                  <Text style={{ fontSize: '12px', lineHeight: '1.4' }}>
+                                    {maneuver.description}
+                                  </Text>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        );
+
+                        return (
+                          <Popover
+                            key={originalIndex}
+                            content={popoverContent}
+                            trigger={isEditing || popoverVisible === maneuverIndex ? 'click' : 'hover'}
+                            open={popoverVisible === maneuverIndex || isEditing ? true : undefined}
+                            onOpenChange={(visible) => {
+                              if (!visible && !isEditing) {
+                                setPopoverVisible(null);
+                              } else if (visible && !isEditing) {
+                                setPopoverVisible(maneuverIndex);
+                              }
                             }}
+                            placement="right"
+                            mouseEnterDelay={0.1}
+                            mouseLeaveDelay={isEditing || popoverVisible === maneuverIndex ? 0 : 0.1}
                           >
-                            <div
+                            <Tag
                               style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'flex-start',
-                                marginBottom: '8px',
-                                flexWrap: 'wrap',
-                                gap: '4px'
+                                cursor: 'pointer',
+                                borderLeft: `3px solid ${getAttachmentColor(attachment)}`,
+                                margin: '2px 4px 2px 0',
+                                fontSize: '13px',
+                                padding: '4px 8px',
+                                lineHeight: '1.2'
                               }}
                             >
-                              <Text strong style={{ fontSize: '14px', flex: '1 1 auto' }}>
-                                {maneuver.name}
-                              </Text>
-                              <Space size="small" style={{ flex: '0 0 auto' }}>
-                                <Tag color="orange" size="small">コスト: {maneuver.cost}</Tag>
-                                <Tag color="green" size="small">{maneuver.timing}</Tag>
-                              </Space>
-                            </div>
-                            <div style={{ marginBottom: '4px' }}>
-                              <Text type="secondary" style={{ fontSize: '12px' }}>
-                                射程: {maneuver.range}
-                              </Text>
-                            </div>
-                            <Text style={{ fontSize: '12px', lineHeight: '1.4' }}>
-                              {maneuver.description}
-                            </Text>
-                          </Card>
-                        </Col>
-                      ))}
-                    </Row>
+                              {maneuver.name}
+                            </Tag>
+                          </Popover>
+                        );
+                      })}
+                    </Space>
                   </div>
                 ))}
             </Space>
@@ -328,6 +512,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character }) => {
           </Col>
         )}
       </Row>
+
     </div>
   );
 };
