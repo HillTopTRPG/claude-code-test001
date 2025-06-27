@@ -1,11 +1,18 @@
 import { signUp, signIn, signOut, getCurrentUser, fetchAuthSession } from 'aws-amplify/auth';
-import type { SignUpParams, SignInParams, AuthUser, SignUpResult, SignInResult, AuthStatus } from '../types/auth';
-import { 
-  mockSignUp, 
-  mockSignIn, 
-  mockSignOut, 
-  getCurrentMockUser, 
-  checkMockAuthStatus 
+import type {
+  SignUpParams,
+  SignInParams,
+  AuthUser,
+  SignUpResult,
+  SignInResult,
+  AuthStatus,
+} from '../types/auth';
+import {
+  mockSignUp,
+  mockSignIn,
+  mockSignOut,
+  getCurrentMockUser,
+  checkMockAuthStatus,
 } from './mockAuth';
 
 // 開発環境ではモック認証を使用
@@ -14,7 +21,11 @@ const USE_MOCK_AUTH = import.meta.env.DEV || !import.meta.env.VITE_AWS_REGION;
 /**
  * ユーザー登録
  */
-export const authSignUp = async ({ username, password, email }: SignUpParams): Promise<SignUpResult> => {
+export const authSignUp = async ({
+  username,
+  password,
+  email,
+}: SignUpParams): Promise<SignUpResult> => {
   if (USE_MOCK_AUTH) {
     return mockSignUp({ username, password, email });
   }

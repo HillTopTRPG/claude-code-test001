@@ -13,7 +13,7 @@ const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const { refetch } = useAuth();
 
-  const onFinish = async (values: any) => {
+  const onFinish = async (values: { email: string; password: string }) => {
     setLoading(true);
     try {
       const result = await authSignIn({
@@ -28,7 +28,7 @@ const LoginPage: React.FC = () => {
       } else {
         message.error(result.error || 'ログインに失敗しました');
       }
-    } catch (error) {
+    } catch {
       message.error('ログインに失敗しました');
     } finally {
       setLoading(false);
@@ -36,46 +36,42 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <Layout style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
-      <Content style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center',
-        padding: '20px'
-      }}>
+    <Layout
+      style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      }}
+    >
+      <Content
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: '20px',
+        }}
+      >
         <Card style={{ width: '100%', maxWidth: '400px', padding: '20px' }}>
           <div style={{ textAlign: 'center', marginBottom: '30px' }}>
             <Title level={2}>ログイン</Title>
             <Text type="secondary">アカウントにログインしてください</Text>
           </div>
 
-          <Form
-            name="login"
-            onFinish={onFinish}
-            layout="vertical"
-            size="large"
-          >
+          <Form name="login" onFinish={onFinish} layout="vertical" size="large">
             <Form.Item
               name="email"
               rules={[
                 { required: true, message: 'メールアドレスを入力してください' },
-                { type: 'email', message: '有効なメールアドレスを入力してください' }
+                { type: 'email', message: '有効なメールアドレスを入力してください' },
               ]}
             >
-              <Input 
-                prefix={<MailOutlined />} 
-                placeholder="メールアドレス" 
-              />
+              <Input prefix={<MailOutlined />} placeholder="メールアドレス" />
             </Form.Item>
 
             <Form.Item
               name="password"
               rules={[{ required: true, message: 'パスワードを入力してください' }]}
             >
-              <Input.Password 
-                prefix={<LockOutlined />} 
-                placeholder="パスワード" 
-              />
+              <Input.Password prefix={<LockOutlined />} placeholder="パスワード" />
             </Form.Item>
 
             <Form.Item style={{ marginBottom: '20px' }}>
@@ -88,18 +84,14 @@ const LoginPage: React.FC = () => {
           <Divider>または</Divider>
 
           <Space direction="vertical" style={{ width: '100%', textAlign: 'center' }}>
-            <Text type="secondary">
-              アカウントをお持ちでない方は
-            </Text>
+            <Text type="secondary">アカウントをお持ちでない方は</Text>
             <Link to="/auth/signup">
               <Button type="link" style={{ padding: 0 }}>
                 新規登録はこちら
               </Button>
             </Link>
             <Link to="/">
-              <Button type="text">
-                トップページに戻る
-              </Button>
+              <Button type="text">トップページに戻る</Button>
             </Link>
           </Space>
         </Card>

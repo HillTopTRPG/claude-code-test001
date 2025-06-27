@@ -1,5 +1,12 @@
 // 開発・テスト用のモック認証サービス
-import type { SignUpParams, SignInParams, AuthUser, SignUpResult, SignInResult, AuthStatus } from '../types/auth';
+import type {
+  SignUpParams,
+  SignInParams,
+  AuthUser,
+  SignUpResult,
+  SignInResult,
+  AuthStatus,
+} from '../types/auth';
 
 // ローカルストレージキー
 const MOCK_USERS_KEY = 'trpg_mock_users';
@@ -42,17 +49,21 @@ const saveCurrentUser = (user: AuthUser | null) => {
 /**
  * モックユーザー登録
  */
-export const mockSignUp = async ({ username, email, password }: SignUpParams): Promise<SignUpResult> => {
+export const mockSignUp = async ({
+  username,
+  email,
+  password,
+}: SignUpParams): Promise<SignUpResult> => {
   // 遅延をシミュレート
   await new Promise(resolve => setTimeout(resolve, 1000));
 
   const users = getMockUsers();
-  
+
   // 既存ユーザーチェック
   if (users.find(u => u.email === email || u.username === username)) {
     return {
       success: false,
-      error: 'ユーザーは既に存在します'
+      error: 'ユーザーは既に存在します',
     };
   }
 
@@ -62,7 +73,7 @@ export const mockSignUp = async ({ username, email, password }: SignUpParams): P
     email,
     password,
     userId: `mock_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-    isVerified: true // モックでは即座に認証済みとする
+    isVerified: true, // モックでは即座に認証済みとする
   };
 
   users.push(newUser);
@@ -71,7 +82,7 @@ export const mockSignUp = async ({ username, email, password }: SignUpParams): P
   return {
     success: true,
     isSignUpComplete: true,
-    userId: newUser.userId
+    userId: newUser.userId,
   };
 };
 
@@ -83,19 +94,21 @@ export const mockSignIn = async ({ username, password }: SignInParams): Promise<
   await new Promise(resolve => setTimeout(resolve, 1000));
 
   const users = getMockUsers();
-  const user = users.find(u => (u.email === username || u.username === username) && u.password === password);
+  const user = users.find(
+    u => (u.email === username || u.username === username) && u.password === password
+  );
 
   if (!user) {
     return {
       success: false,
-      error: 'メールアドレスまたはパスワードが正しくありません'
+      error: 'メールアドレスまたはパスワードが正しくありません',
     };
   }
 
   if (!user.isVerified) {
     return {
       success: false,
-      error: 'アカウントが認証されていません'
+      error: 'アカウントが認証されていません',
     };
   }
 
@@ -103,14 +116,14 @@ export const mockSignIn = async ({ username, password }: SignInParams): Promise<
   const authUser: AuthUser = {
     username: user.username,
     email: user.email,
-    userId: user.userId
+    userId: user.userId,
   };
 
   saveCurrentUser(authUser);
 
   return {
     success: true,
-    isSignedIn: true
+    isSignedIn: true,
   };
 };
 
@@ -129,7 +142,7 @@ export const mockSignOut = async () => {
 export const getCurrentMockUser = async (): Promise<AuthUser | null> => {
   const userStr = localStorage.getItem(MOCK_CURRENT_USER_KEY);
   if (!userStr) return null;
-  
+
   try {
     return JSON.parse(userStr);
   } catch {
@@ -144,6 +157,6 @@ export const checkMockAuthStatus = async (): Promise<AuthStatus> => {
   const user = await getCurrentMockUser();
   return {
     isAuthenticated: !!user,
-    tokens: user ? { mock: true } : null
+    tokens: user ? { mock: true } : null,
   };
 };

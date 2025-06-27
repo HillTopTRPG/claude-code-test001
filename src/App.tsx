@@ -6,7 +6,7 @@ import LoginPage from './pages/auth/LoginPage';
 import SignupPage from './pages/auth/SignupPage';
 import SystemsPage from './pages/systems/SystemsPage';
 import NechronicaPage from './pages/systems/nechronica/NechronicaPage';
-import './App.css'
+import './App.css';
 
 function App() {
   return (
@@ -21,7 +21,7 @@ function App() {
         </Routes>
       </Router>
     </ConfigProvider>
-  )
+  );
 }
 
-export default App
+export default App;

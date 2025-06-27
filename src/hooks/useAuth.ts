@@ -12,7 +12,7 @@ export const useAuth = () => {
     try {
       setIsLoading(true);
       const authStatus = await checkAuthStatus();
-      
+
       if (authStatus.isAuthenticated) {
         const currentUser = await getCurrentAuthUser();
         setUser(currentUser);
