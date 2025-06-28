@@ -37,6 +37,22 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
           ref: ${{ inputs.source_branch }}
           
+      - name: Validate Branch
+        run: |
+          if [ "${{ inputs.source_branch }}" = "main" ]; then
+            echo "❌ Cannot create PR from main to main"
+            echo "Please specify a different source branch"
+            exit 1
+          fi
+          
+          # Check if branch exists
+          if ! git show-ref --verify --quiet refs/remotes/origin/${{ inputs.source_branch }}; then
+            echo "❌ Source branch '${{ inputs.source_branch }}' does not exist"
+            exit 1
+          fi
+          
+          echo "✅ Branch validation passed"
+          
       - name: Create Pull Request
         run: |
           gh pr create \
