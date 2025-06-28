@@ -167,3 +167,11 @@ amplify/                # Amplify設定ファイル
 /systems/nechronica/sheet  # キャラクターシート表示
 /systems/[future-systems]  # 将来追加予定のシステム
 ```
+
+## Git・GitHub運用ルール
+
+### プルリクエスト作成
+
+- Claudeによるプルリクエスト作成時は、作成者をClaudeとして設定する
+- 必ずユーザーによるApprove後にマージを行う
+- 自動マージは行わず、手動でのレビュー・承認プロセスを必須とする

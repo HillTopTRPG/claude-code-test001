@@ -35,22 +35,25 @@ export const useAuth = () => {
 
     // Amplify Hubでの認証状態変更をリッスン
     const unsubscribe = Hub.listen('auth', ({ payload }) => {
-      switch (payload.event) {
-        case 'signedIn':
+      const eventHandlers: Record<string, () => void> = {
+        signedIn: () => {
           console.log('User signed in');
           checkUser();
-          break;
-        case 'signedOut':
+        },
+        signedOut: () => {
           console.log('User signed out');
           setUser(null);
           setIsAuthenticated(false);
           setIsLoading(false);
-          break;
-        case 'tokenRefresh':
+        },
+        tokenRefresh: () => {
           console.log('Token refreshed');
-          break;
-        default:
-          break;
+        },
+      };
+
+      const handler = eventHandlers[payload.event];
+      if (handler) {
+        handler();
       }
     });
 
