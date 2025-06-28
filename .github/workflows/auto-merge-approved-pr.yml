@@ -12,6 +12,12 @@ on:
     workflows: ["CI"]
     types: [completed]
 
+permissions:
+  contents: read
+  pull-requests: write
+  checks: read
+  actions: read
+
 jobs:
   auto-merge:
     # 以下のいずれかの条件で実行:
@@ -21,6 +27,10 @@ jobs:
     # 4. ステータスが更新された
     # 5. CIワークフローが完了した (workflow_run)
     runs-on: ubuntu-latest
+    # workflow_runイベントの場合、CI成功時のみ実行
+    if: |
+      github.event_name != 'workflow_run' || 
+      github.event.workflow_run.conclusion == 'success'
     
     steps:
       - name: Generate Claude AI App Token
@@ -87,6 +97,7 @@ jobs:
             }
             
             console.log(`Processing PR #${prNumber}`);
+            console.log(`Event: ${context.eventName}`);
             
             const { data: prData } = await github.rest.pulls.get({
               owner: context.repo.owner,
