@@ -1,9 +1,5 @@
 // キャラクターシート管理サイトからのデータ取得サービス
-import {
-  setJsonpCallback,
-  hasJsonpCallback,
-  deleteJsonpCallback,
-} from '../../types/global';
+import { setJsonpCallback, hasJsonpCallback, deleteJsonpCallback } from '../../types/global';
 
 export interface CharasheetResponse<T = unknown> {
   success: boolean;

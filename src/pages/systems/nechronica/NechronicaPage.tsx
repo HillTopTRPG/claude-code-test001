@@ -1,15 +1,5 @@
 import React, { useState } from 'react';
-import {
-  Layout,
-  Typography,
-  Card,
-  Input,
-  Button,
-  Space,
-  Alert,
-  Spin,
-  message,
-} from 'antd';
+import { Layout, Typography, Card, Input, Button, Space, Alert, Spin, message } from 'antd';
 import {
   LinkOutlined,
   SearchOutlined,
@@ -93,13 +83,16 @@ const NechronicaPage: React.FC = () => {
     setError(null);
   };
 
-  const handleManeuverEdit = (maneuverIndex: number, updatedManeuver: NechronicaCharacter['maneuvers'][0]) => {
+  const handleManeuverEdit = (
+    maneuverIndex: number,
+    updatedManeuver: NechronicaCharacter['maneuvers'][0]
+  ) => {
     if (character) {
       const updatedCharacter = {
         ...character,
         maneuvers: character.maneuvers.map((maneuver, index) =>
           index === maneuverIndex ? updatedManeuver : maneuver
-        )
+        ),
       };
       setCharacter(updatedCharacter);
     }

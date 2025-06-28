@@ -18,10 +18,7 @@ export interface WindowGlobal extends Window {
 export const getWindowWithJsonp = (): WindowGlobal => window as unknown as WindowGlobal;
 
 // ジェネリクス対応のJSONPコールバック設定ヘルパー
-export const setJsonpCallback = <T>(
-  callbackName: string,
-  callback: (data: T) => void
-): void => {
+export const setJsonpCallback = <T>(callbackName: string, callback: (data: T) => void): void => {
   const globalWindow = getWindowWithJsonp();
   globalWindow[callbackName as `jsonp_callback_${string}`] = callback as JsonpCallback<unknown>;
 };

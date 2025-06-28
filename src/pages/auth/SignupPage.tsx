@@ -11,7 +11,12 @@ const SignupPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const onFinish = async (values: { username: string; email: string; password: string; confirmPassword: string }) => {
+  const onFinish = async (values: {
+    username: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+  }) => {
     setLoading(true);
     try {
       const result = await authSignUp({
