@@ -5,6 +5,9 @@ export default defineConfig({
   testDir: '.',
   testMatch: 'test-maneuver-status.js',
   
+  // 出力ディレクトリ
+  outputDir: 'test-results',
+  
   // 並列実行設定
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
