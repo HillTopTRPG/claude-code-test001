@@ -275,31 +275,52 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onManeuverEd
           </Card>
         </Col>
 
-        {/* 部位・パーツ */}
+        {/* 部位状態 */}
         <Col xs={24} lg={12}>
-          <Card title="部位・パーツ" style={{ height: '100%' }}>
+          <Card title="部位状態" style={{ height: '100%' }}>
             <Row gutter={[8, 8]}>
-              {character.parts.map((part, index) => (
-                <Col xs={12} sm={8} key={index}>
-                  <Tooltip
-                    title={`${getPartPositionName(part.position)} - ダメージ: ${part.damage}`}
-                  >
-                    <Tag
-                      color={getPartColor(part.position, part.damage)}
-                      style={{
-                        width: '100%',
-                        textAlign: 'center',
-                        padding: '8px 4px',
-                        marginBottom: '4px',
-                        opacity: part.damage > 0 ? 0.5 : 1,
-                      }}
+              {(() => {
+                // 部位ごとのマニューバを集計
+                const bodyParts = ['head', 'arm', 'body', 'leg'];
+                const partStatus = bodyParts.map(partType => {
+                  const partManeuvers = character.maneuvers.filter(m => m.attachment === partType);
+                  const damagedManeuvers = partManeuvers.filter(m => m.damaged || false);
+                  const isLost = partManeuvers.length > 0 && partManeuvers.every(m => m.damaged || false);
+                  
+                  return {
+                    type: partType,
+                    name: getPartPositionName(partType),
+                    total: partManeuvers.length,
+                    damaged: damagedManeuvers.length,
+                    isLost
+                  };
+                }).filter(part => part.total > 0); // マニューバがある部位のみ表示
+
+                return partStatus.map((part, index) => (
+                  <Col xs={12} sm={6} key={index}>
+                    <Tooltip
+                      title={`${part.name} - ${part.damaged}/${part.total} 損傷${part.isLost ? ' (欠損)' : ''}`}
                     >
-                      {part.name}
-                      {part.damage > 0 && <span> (損傷)</span>}
-                    </Tag>
-                  </Tooltip>
-                </Col>
-              ))}
+                      <Tag
+                        color={part.isLost ? '#d9d9d9' : getPartColor(part.type, part.damaged)}
+                        style={{
+                          width: '100%',
+                          textAlign: 'center',
+                          padding: '8px 4px',
+                          marginBottom: '4px',
+                          opacity: part.isLost ? 0.5 : 1,
+                        }}
+                      >
+                        {part.name}
+                        {part.damaged > 0 && (
+                          <span> ({part.damaged}/{part.total})</span>
+                        )}
+                        {part.isLost && <span> (欠損)</span>}
+                      </Tag>
+                    </Tooltip>
+                  </Col>
+                ));
+              })()}
             </Row>
           </Card>
         </Col>
@@ -549,10 +570,12 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onManeuverEd
                                   display: 'flex',
                                   alignItems: 'center',
                                   wordBreak: 'break-all',
-                                  color: '#666',
+                                  color: maneuver.damaged ? '#999' : '#666',
+                                  textDecoration: maneuver.damaged ? 'line-through' : 'none',
                                 }}
                               >
                                 {maneuver.name}
+                                {maneuver.damaged && ' ×'}
                               </div>
                               <div
                                 style={{
@@ -568,6 +591,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onManeuverEd
                                   backgroundSize: 'cover',
                                   backgroundPosition: 'center',
                                   backgroundRepeat: 'no-repeat',
+                                  opacity: maneuver.damaged ? 0.4 : 1,
+                                  filter: maneuver.damaged ? 'grayscale(80%)' : 'none',
                                 }}
                               >
                                 <img
@@ -586,6 +611,24 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onManeuverEd
                                       '/src/components/systems/nechronica/images/unknown.png';
                                   }}
                                 />
+                                {/* 損傷マーク */}
+                                {maneuver.damaged && (
+                                  <div
+                                    style={{
+                                      position: 'absolute',
+                                      top: '50%',
+                                      left: '50%',
+                                      transform: 'translate(-50%, -50%)',
+                                      fontSize: '20px',
+                                      color: '#ff4d4f',
+                                      fontWeight: 'bold',
+                                      textShadow: '1px 1px 2px rgba(0,0,0,0.7)',
+                                      zIndex: 2,
+                                    }}
+                                  >
+                                    ×
+                                  </div>
+                                )}
                               </div>
                             </div>
                           </Popover>
