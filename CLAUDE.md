@@ -227,3 +227,60 @@ Claude CodeからPRを直接作成する場合は、以下のスクリプトを�
 - ユーザーがApprove・マージ可能
 - タイトルと詳細を事前に指定可能
 - Approve後に自動マージ・ブランチ削除機能
+
+## Claude Code 作業フロー
+
+### 新しい依頼を受けた際の必須手順
+
+Claude Codeで新しい作業を開始する際は、以下の手順を**必ず**最初に実行してください：
+
+#### 1. 既存PRの状況確認
+```bash
+gh pr list  # オープン中のPRを確認
+```
+
+#### 2. ブランチの初期化（必須）
+```bash
+git checkout main           # mainブランチに切り替え
+git pull origin main        # 最新状態に更新
+git checkout -b feature/新機能名  # 新しいブランチを作成
+```
+
+#### 3. 特別なブランチ運用ルール
+
+**imagesブランチについて**：
+- `images`ブランチは画像をPRに添付する専用ブランチです
+- imagesブランチに対する依頼を受けた場合も、**必ずmainブランチから新しいブランチを作成**してください
+- imagesブランチで直接作業は行わないでください
+
+### コミット・PR作成の必須ルール
+
+#### 1. コミットAuthor設定
+```bash
+git commit --author="Claude AI <claude@anthropic.com>" -m "コミットメッセージ"
+```
+
+#### 2. PR作成方法
+**必ず**Claude AI Botアカウントを使用してPRを作成してください：
+```bash
+./scripts/create-pr.sh <branch> "<title>" "<body>"
+```
+
+**厳禁事項**：
+- ユーザーアカウントでのPR作成は絶対に行わないでください
+- `gh pr create`の直接使用は避け、必ずスクリプトを使用してください
+
+#### 3. ファイル管理ルール
+
+**テスト関連ファイル**：
+- `tests/test-results/` - Playwrightテスト実行結果（コミット対象外）
+- `tests/reports/` - HTMLレポート（コミット対象外）
+- `tests/results/` - JSON結果ファイル（コミット対象外）
+
+これらのディレクトリは`.gitignore`で除外されており、**絶対にコミットしないでください**。
+
+### 作業完了後の手順
+
+1. PRがマージされたら速やかに`main`ブランチに戻る
+2. 作業済みのfeatureブランチを適切にクリーンアップ
+3. 次の作業前に必ず最新のmainブランチから開始
