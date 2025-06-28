@@ -29,6 +29,7 @@ import {
   CloseOutlined,
 } from '@ant-design/icons';
 import type { NechronicaCharacter } from '../../../types/systems/nechronica';
+import { getManeuverIconPath, getManeuverBackgroundPath } from '../../../utils/parsers/nechronicaParser';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -441,18 +442,60 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onManeuverEd
                             mouseEnterDelay={0.1}
                             mouseLeaveDelay={isEditing || popoverVisible === maneuverIndex ? 0 : 0.1}
                           >
-                            <Tag
+                            <div
                               style={{
                                 cursor: 'pointer',
-                                borderLeft: `3px solid ${getAttachmentColor(attachment)}`,
                                 margin: '2px 4px 2px 0',
-                                fontSize: '13px',
-                                padding: '4px 8px',
-                                lineHeight: '1.2'
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                gap: '2px',
+                                width: '60px'
                               }}
                             >
-                              {maneuver.name}
-                            </Tag>
+                              <div style={{ 
+                                fontSize: '10px', 
+                                lineHeight: '1.1',
+                                textAlign: 'center',
+                                minHeight: '20px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                wordBreak: 'break-all',
+                                color: '#666'
+                              }}>
+                                {maneuver.name}
+                              </div>
+                              <div style={{
+                                width: '40px',
+                                height: '40px',
+                                border: `2px solid ${getAttachmentColor(attachment)}`,
+                                borderRadius: '4px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                position: 'relative',
+                                backgroundImage: `url(${getManeuverBackgroundPath(maneuver.powerType)})`,
+                                backgroundSize: 'cover',
+                                backgroundPosition: 'center',
+                                backgroundRepeat: 'no-repeat'
+                              }}>
+                                <img 
+                                  src={getManeuverIconPath(maneuver.name, attachment)}
+                                  alt={maneuver.name}
+                                  style={{ 
+                                    width: '32px', 
+                                    height: '32px',
+                                    objectFit: 'contain',
+                                    position: 'relative',
+                                    zIndex: 1
+                                  }}
+                                  onError={(e) => {
+                                    // 画像読み込みエラー時のフォールバック
+                                    e.currentTarget.src = '/src/components/systems/nechronica/images/unknown.png';
+                                  }}
+                                />
+                              </div>
+                            </div>
                           </Popover>
                         );
                       })}

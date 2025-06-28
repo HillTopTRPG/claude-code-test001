@@ -52,6 +52,7 @@ export interface NechronicaManeuver {
   range: string;
   description: string;
   attachment: 'position' | 'main-class' | 'sub-class' | 'head' | 'arm' | 'body' | 'leg';
+  powerType: number; // 0: なし, 1: 通常, 2: 必殺技, 3: 行動値増加, 4: 補助, 5: 妨害, 6: 防御/生贄, 7: 移動
 }
 
 export interface MemoryFragment {

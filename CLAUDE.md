@@ -115,7 +115,7 @@ amplify/                # Amplify設定ファイル
 
 ### キャラクターシート可視化機能
 
-外部キャラクターシート管理サイト（https://charasheet.vampire-blood.net/）との連携を行います。
+外部キャラクターシート管理サイト（[https://charasheet.vampire-blood.net/](https://charasheet.vampire-blood.net/)）との連携を行います。
 
 #### 基本仕様
 
