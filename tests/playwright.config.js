@@ -5,6 +5,9 @@ export default defineConfig({
   testDir: '.',
   testMatch: 'test-maneuver-status.js',
   
+  // 出力ディレクトリ
+  outputDir: 'test-results',
+  
   // 並列実行設定
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
@@ -13,8 +16,8 @@ export default defineConfig({
   
   // レポート設定
   reporter: [
-    ['html'],
-    ['json', { outputFile: 'test-results/results.json' }]
+    ['html', { outputFolder: 'reports' }],
+    ['json', { outputFile: 'results/results.json' }]
   ],
   
   use: {
@@ -44,5 +47,6 @@ export default defineConfig({
     url: 'http://localhost:5173',
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
+    cwd: '..',
   },
 });
