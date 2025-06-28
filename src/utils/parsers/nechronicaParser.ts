@@ -273,16 +273,18 @@ const parseNechronicaSkills = (rawData: RawNechronicaApiData | Record<string, un
  */
 const convertPowerHanteiToAttachment = (hantei: string | number): 'position' | 'main-class' | 'sub-class' | 'head' | 'arm' | 'body' | 'leg' => {
   const hanteiNum = Number(hantei);
-  switch (hanteiNum) {
-    case 1: return 'position';
-    case 2: return 'main-class';
-    case 3: return 'sub-class';
-    case 4: return 'head';
-    case 5: return 'arm';
-    case 6: return 'body';
-    case 7: return 'leg';
-    default: return 'body'; // デフォルトは胴体
-  }
+  
+  const hanteiMapping: Record<number, 'position' | 'main-class' | 'sub-class' | 'head' | 'arm' | 'body' | 'leg'> = {
+    1: 'position',
+    2: 'main-class',
+    3: 'sub-class',
+    4: 'head',
+    5: 'arm',
+    6: 'body',
+    7: 'leg',
+  };
+  
+  return hanteiMapping[hanteiNum] || 'body'; // デフォルトは胴体
 };
 
 /**
