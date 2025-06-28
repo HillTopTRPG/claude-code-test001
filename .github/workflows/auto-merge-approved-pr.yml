@@ -47,16 +47,37 @@ jobs:
             const ownerReview = latestReviews['${{ github.repository_owner }}'];
             const isApproved = ownerReview && ownerReview.state === 'APPROVED';
             
-            // ステータスチェックを確認
+            // ステータスチェックを確認（check runs と status checks の両方）
             const { data: checks } = await github.rest.checks.listForRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
               ref: pr.head.sha
             });
             
-            const allChecksPassed = checks.check_runs.every(check => 
+            const { data: statuses } = await github.rest.repos.getCombinedStatusForRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: pr.head.sha
+            });
+            
+            // 自分自身（auto-merge workflow）は除外
+            const relevantChecks = checks.check_runs.filter(check => 
+              check.name !== 'auto-merge'
+            );
+            
+            const checksPassed = relevantChecks.length === 0 || relevantChecks.every(check => 
               check.status === 'completed' && check.conclusion === 'success'
             );
+            
+            const statusesPassed = statuses.state === 'success' || 
+              statuses.statuses.length === 0 || 
+              statuses.statuses.every(status => status.state === 'success');
+            
+            const allChecksPassed = checksPassed && statusesPassed;
+            
+            console.log(`Check runs (${relevantChecks.length}):`, relevantChecks.map(c => `${c.name}: ${c.conclusion}`));
+            console.log(`Status checks (${statuses.statuses.length}):`, statuses.statuses.map(s => `${s.context}: ${s.state}`));
+            console.log(`Combined status: ${statuses.state}`);
             
             console.log(`PR #${pr.number}:`);
             console.log(`- Created by: ${pr.user.login}`);
