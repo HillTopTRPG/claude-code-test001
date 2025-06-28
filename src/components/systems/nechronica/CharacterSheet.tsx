@@ -27,6 +27,8 @@ import {
   EditOutlined,
   SaveOutlined,
   CloseOutlined,
+  CheckCircleOutlined,
+  StopOutlined,
 } from '@ant-design/icons';
 import type { NechronicaCharacter } from '../../../types/systems/nechronica';
 import {
@@ -43,9 +45,18 @@ interface CharacterSheetProps {
     maneuverIndex: number,
     updatedManeuver: NechronicaCharacter['maneuvers'][0]
   ) => void;
+  onManeuverStatusChange?: (
+    maneuverIndex: number,
+    field: 'damaged' | 'used',
+    value: boolean
+  ) => void;
 }
 
-const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onManeuverEdit }) => {
+const CharacterSheet: React.FC<CharacterSheetProps> = ({ 
+  character, 
+  onManeuverEdit,
+  onManeuverStatusChange
+}) => {
   const [editingManeuver, setEditingManeuver] = useState<{
     maneuver: NechronicaCharacter['maneuvers'][0];
     index: number;
@@ -91,6 +102,17 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onManeuverEd
       handleEditCancel();
     } catch (error) {
       console.error('Validation failed:', error);
+    }
+  };
+
+  // マニューバのステータス変更ハンドラー
+  const handleStatusChange = (
+    maneuverIndex: number,
+    field: 'damaged' | 'used',
+    value: boolean
+  ) => {
+    if (onManeuverStatusChange) {
+      onManeuverStatusChange(maneuverIndex, field, value);
     }
   };
   // 能力値アイコンの定義
@@ -285,6 +307,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onManeuverEd
                 const partStatus = bodyParts.map(partType => {
                   const partManeuvers = character.maneuvers.filter(m => m.attachment === partType);
                   const damagedManeuvers = partManeuvers.filter(m => m.damaged || false);
+                  const usedManeuvers = partManeuvers.filter(m => m.used || false);
                   const isLost = partManeuvers.length > 0 && partManeuvers.every(m => m.damaged || false);
                   
                   return {
@@ -292,6 +315,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onManeuverEd
                     name: getPartPositionName(partType),
                     total: partManeuvers.length,
                     damaged: damagedManeuvers.length,
+                    used: usedManeuvers.length,
                     isLost
                   };
                 }).filter(part => part.total > 0); // マニューバがある部位のみ表示
@@ -299,7 +323,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onManeuverEd
                 return partStatus.map((part, index) => (
                   <Col xs={12} sm={6} key={index}>
                     <Tooltip
-                      title={`${part.name} - ${part.damaged}/${part.total} 損傷${part.isLost ? ' (欠損)' : ''}`}
+                      title={`${part.name} - 損傷:${part.damaged}/${part.total} 使用:${part.used}/${part.total}${part.isLost ? ' (欠損)' : ''}`}
                     >
                       <Tag
                         color={part.isLost ? '#d9d9d9' : getPartColor(part.type, part.damaged)}
@@ -312,8 +336,12 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onManeuverEd
                         }}
                       >
                         {part.name}
-                        {part.damaged > 0 && (
-                          <span> ({part.damaged}/{part.total})</span>
+                        {(part.damaged > 0 || part.used > 0) && (
+                          <span>
+                            {part.damaged > 0 && ` 損:${part.damaged}`}
+                            {part.used > 0 && ` 使:${part.used}`}
+                            /{part.total}
+                          </span>
                         )}
                         {part.isLost && <span> (欠損)</span>}
                       </Tag>
@@ -570,12 +598,14 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onManeuverEd
                                   display: 'flex',
                                   alignItems: 'center',
                                   wordBreak: 'break-all',
-                                  color: maneuver.damaged ? '#999' : '#666',
+                                  color: maneuver.damaged ? '#999' : maneuver.used ? '#faad14' : '#666',
                                   textDecoration: maneuver.damaged ? 'line-through' : 'none',
+                                  fontStyle: maneuver.used ? 'italic' : 'normal',
                                 }}
                               >
                                 {maneuver.name}
                                 {maneuver.damaged && ' ×'}
+                                {maneuver.used && ' ✓'}
                               </div>
                               <div
                                 style={{
@@ -591,8 +621,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onManeuverEd
                                   backgroundSize: 'cover',
                                   backgroundPosition: 'center',
                                   backgroundRepeat: 'no-repeat',
-                                  opacity: maneuver.damaged ? 0.4 : 1,
-                                  filter: maneuver.damaged ? 'grayscale(80%)' : 'none',
+                                  opacity: maneuver.damaged ? 0.4 : maneuver.used ? 0.7 : 1,
+                                  filter: maneuver.damaged ? 'grayscale(80%)' : maneuver.used ? 'sepia(50%)' : 'none',
                                 }}
                               >
                                 <img
@@ -630,6 +660,50 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onManeuverEd
                                   </div>
                                 )}
                               </div>
+                              {/* 状態変更ボタン */}
+                              {onManeuverStatusChange && (
+                                <div
+                                  style={{
+                                    display: 'flex',
+                                    gap: '2px',
+                                    marginTop: '2px',
+                                  }}
+                                >
+                                  <Button
+                                    size="small"
+                                    type={maneuver.used ? 'primary' : 'default'}
+                                    icon={<CheckCircleOutlined />}
+                                    style={{
+                                      fontSize: '8px',
+                                      padding: '0 4px',
+                                      height: '16px',
+                                      minWidth: '16px',
+                                    }}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleStatusChange(maneuverIndex, 'used', !maneuver.used);
+                                    }}
+                                    title="使用状態切り替え"
+                                  />
+                                  <Button
+                                    size="small"
+                                    type={maneuver.damaged ? 'primary' : 'default'}
+                                    danger={maneuver.damaged}
+                                    icon={<StopOutlined />}
+                                    style={{
+                                      fontSize: '8px',
+                                      padding: '0 4px',
+                                      height: '16px',
+                                      minWidth: '16px',
+                                    }}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleStatusChange(maneuverIndex, 'damaged', !maneuver.damaged);
+                                    }}
+                                    title="損傷状態切り替え"
+                                  />
+                                </div>
+                              )}
                             </div>
                           </Popover>
                         );
