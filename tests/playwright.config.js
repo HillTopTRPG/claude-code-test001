@@ -3,7 +3,7 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   // テストディレクトリ
   testDir: '.',
-  testMatch: 'test-maneuver-status.js',
+  testMatch: ['test-maneuver-status.js', 'test-character-type-selection.js'],
   
   // 出力ディレクトリ
   outputDir: 'test-results',
