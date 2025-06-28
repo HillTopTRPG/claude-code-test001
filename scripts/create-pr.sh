@@ -29,9 +29,22 @@ command -v gh >/dev/null 2>&1 || { echo "❌ GitHub CLI (gh) is required but not
 
 echo "🔐 Starting Claude AI App authentication..."
 
-# GitHub App設定
-APP_ID="1474478"
-PRIVATE_KEY_FILE="/Users/hilltop/Downloads/claude-ai-assistant-for-hilltop.2025-06-27.private-key.pem"
+# GitHub App設定（環境変数から取得）
+APP_ID="${CLAUDE_APP_ID:-}"
+PRIVATE_KEY_FILE="${CLAUDE_APP_PRIVATE_KEY_PATH:-}"
+
+# 環境変数チェック
+if [ -z "$APP_ID" ]; then
+    echo "❌ CLAUDE_APP_ID environment variable is required"
+    echo "   Set it with: export CLAUDE_APP_ID=your_app_id"
+    exit 1
+fi
+
+if [ -z "$PRIVATE_KEY_FILE" ]; then
+    echo "❌ CLAUDE_APP_PRIVATE_KEY_PATH environment variable is required"
+    echo "   Set it with: export CLAUDE_APP_PRIVATE_KEY_PATH=/path/to/private-key.pem"
+    exit 1
+fi
 
 # Private Keyファイル存在確認
 if [ ! -f "$PRIVATE_KEY_FILE" ]; then

@@ -64,9 +64,20 @@ class GitHubAppAuth:
 def create_pr(branch, title, body="🤖 Generated with [Claude Code](https://claude.ai/code)"):
     """GitHub App認証でPR作成"""
     
-    # 設定
-    APP_ID = "1474478"
-    PRIVATE_KEY_PATH = "/Users/hilltop/Downloads/claude-ai-assistant-for-hilltop.2025-06-27.private-key.pem"
+    # 設定（環境変数から取得）
+    import os
+    APP_ID = os.getenv("CLAUDE_APP_ID")
+    PRIVATE_KEY_PATH = os.getenv("CLAUDE_APP_PRIVATE_KEY_PATH")
+    
+    if not APP_ID:
+        print("❌ CLAUDE_APP_ID environment variable is required")
+        print("   Set it with: export CLAUDE_APP_ID=your_app_id")
+        return None
+        
+    if not PRIVATE_KEY_PATH:
+        print("❌ CLAUDE_APP_PRIVATE_KEY_PATH environment variable is required")
+        print("   Set it with: export CLAUDE_APP_PRIVATE_KEY_PATH=/path/to/private-key.pem")
+        return None
     
     try:
         # GitHub App認証

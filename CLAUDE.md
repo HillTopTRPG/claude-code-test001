@@ -179,6 +179,28 @@ amplify/                # Amplify設定ファイル
 
 #### PR作成コマンド
 
+##### セットアップ
+
+まず、環境変数を設定してください：
+
+```bash
+# GitHub App ID
+export CLAUDE_APP_ID=1474478
+
+# プライベートキーファイルのパス
+export CLAUDE_APP_PRIVATE_KEY_PATH=/path/to/claude-ai-assistant-for-hilltop.private-key.pem
+```
+
+永続化する場合は、`.bashrc` または `.zshrc` に追加：
+
+```bash
+echo 'export CLAUDE_APP_ID=1474478' >> ~/.bashrc
+echo 'export CLAUDE_APP_PRIVATE_KEY_PATH=/path/to/claude-ai-assistant-for-hilltop.private-key.pem' >> ~/.bashrc
+source ~/.bashrc
+```
+
+##### 使用方法
+
 Claude CodeからPRを直接作成する場合は、以下のスクリプトを使用：
 
 ```bash
@@ -197,5 +219,10 @@ Claude CodeからPRを直接作成する場合は、以下のスクリプトを�
 
 このスクリプトにより：
 - `claude-ai-assistant-for-hilltop[bot]` がPR作成者となる
+
+##### 注意事項
+
+- プライベートキーファイルは安全な場所に保存し、リポジトリには含めないでください
+- 環境変数が設定されていない場合、スクリプトは実行前にエラーメッセージを表示します
 - ユーザーがApprove・マージ可能
 - タイトルと詳細を事前に指定可能
