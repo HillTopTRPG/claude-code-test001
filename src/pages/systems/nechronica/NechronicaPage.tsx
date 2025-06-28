@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Layout, Typography, Card, Input, Button, Space, Alert, Spin, message } from 'antd';
+import { Layout, Typography, Card, Input, Button, Space, Alert, Spin, message, Select } from 'antd';
 import {
   LinkOutlined,
   SearchOutlined,
@@ -15,13 +15,14 @@ import {
   getMockNechronicaData,
 } from '../../../services/external/nechronica';
 import { parseNechronicaData } from '../../../utils/parsers/nechronicaParser';
-import type { NechronicaCharacter } from '../../../types/systems/nechronica';
+import type { NechronicaCharacter, CharacterType } from '../../../types/systems/nechronica';
 
 const { Content } = Layout;
 const { Title, Paragraph, Text } = Typography;
 
 const NechronicaPage: React.FC = () => {
   const [url, setUrl] = useState('');
+  const [characterType, setCharacterType] = useState<CharacterType>('doll');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [character, setCharacter] = useState<NechronicaCharacter | null>(null);
@@ -45,6 +46,7 @@ const NechronicaPage: React.FC = () => {
 
       if (result.success && result.data) {
         const parsedCharacter = parseNechronicaData(result.data);
+        parsedCharacter.characterType = characterType;
         setCharacter(parsedCharacter);
         message.success('キャラクターシートを取得しました');
       } else {
@@ -185,6 +187,24 @@ const NechronicaPage: React.FC = () => {
                   }
                 />
               )}
+
+              <div style={{ marginBottom: '15px' }}>
+                <Title level={5} style={{ marginBottom: '8px' }}>
+                  キャラクター種別
+                </Title>
+                <Select
+                  value={characterType}
+                  onChange={setCharacterType}
+                  style={{ width: '200px' }}
+                  size="large"
+                  options={[
+                    { value: 'doll', label: 'ドール' },
+                    { value: 'savant', label: 'サヴァント' },
+                    { value: 'horror', label: 'ホラー' },
+                    { value: 'legion', label: 'レギオン' },
+                  ]}
+                />
+              </div>
 
               <Space.Compact style={{ width: '100%', marginBottom: '20px' }}>
                 <Input
