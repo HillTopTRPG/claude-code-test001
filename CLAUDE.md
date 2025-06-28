@@ -170,8 +170,9 @@ amplify/                # Amplify設定ファイル
 
 ## Git・GitHub運用ルール
 
-### プルリクエスト作成
+### コミット・プルリクエスト作成
 
+- Claudeによるコミット作成時は、authorを「Claude AI <claude@anthropic.com>」として設定する
 - Claudeによるプルリクエスト作成時は、作成者をClaudeとして設定する
 - 必ずユーザーによるApprove後にマージを行う
 - 自動マージは行わず、手動でのレビュー・承認プロセスを必須とする
