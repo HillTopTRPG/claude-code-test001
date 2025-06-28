@@ -33,6 +33,7 @@ import {
   getManeuverIconPath,
   getManeuverBackgroundPath,
 } from '../../../utils/parsers/nechronicaParser';
+import CharacterSymbolIcons from './CharacterSymbolIcons';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -183,16 +184,50 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onManeuverEd
   // グループの表示順序
   const attachmentOrder = ['position', 'main-class', 'sub-class', 'head', 'arm', 'body', 'leg'];
 
+  // プロフィールからポジション・クラス情報を抽出
+  const extractProfileInfo = () => {
+    if (!character.profile) return { position: '', mainClass: '', subClass: '' };
+
+    const lines = character.profile.split('\n');
+    let position = '';
+    let mainClass = '';
+    let subClass = '';
+
+    lines.forEach(line => {
+      if (line.includes('ポジション:')) {
+        position = line.replace('ポジション:', '').trim();
+      } else if (line.includes('メインクラス:')) {
+        mainClass = line.replace('メインクラス:', '').trim();
+      } else if (line.includes('サブクラス:')) {
+        subClass = line.replace('サブクラス:', '').trim();
+      }
+    });
+
+    return { position, mainClass, subClass };
+  };
+
+  const { position, mainClass, subClass } = extractProfileInfo();
+
   return (
     <div style={{ padding: '20px' }}>
       {/* キャラクター基本情報 */}
       <Card style={{ marginBottom: '20px' }}>
         <Row gutter={[16, 16]} align="middle">
           <Col xs={24} md={12}>
-            <Title level={2} style={{ margin: 0, color: '#722ed1' }}>
-              {character.name}
-            </Title>
-            <Space direction="vertical" size="small" style={{ marginTop: '10px' }}>
+            <div
+              style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '10px' }}
+            >
+              <Title level={2} style={{ margin: 0, color: '#722ed1' }}>
+                {character.name}
+              </Title>
+              <CharacterSymbolIcons
+                position={position}
+                mainClass={mainClass}
+                subClass={subClass}
+                size="large"
+              />
+            </div>
+            <Space direction="vertical" size="small">
               {character.age && <Text type="secondary">年齢: {character.age}</Text>}
               {character.height && <Text type="secondary">身長: {character.height}</Text>}
               {character.weight && <Text type="secondary">体重: {character.weight}</Text>}
