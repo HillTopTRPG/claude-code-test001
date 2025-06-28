@@ -20,22 +20,22 @@ const CharacterSymbolIcons: React.FC<CharacterSymbolIconsProps> = ({
     medium: 60,
     large: 80,
   };
-  
+
   const iconSize = sizeMapping[size];
 
   // ポジション名からファイル名への変換
   const getPositionIconPath = (positionName: string): string => {
     const basePath = '/src/components/systems/nechronica/images/position';
-    
+
     const positionMapping: Record<string, string> = {
       'アリス': 'alice',
-      'オートマトン': 'automaton', 
+      'オートマトン': 'automaton',
       'コート': 'court',
       'ホリック': 'holic',
       'ジャンク': 'junk',
       'ソロリティ': 'sorority',
     };
-    
+
     const fileName = positionMapping[positionName];
     return fileName ? `${basePath}/${fileName}.png` : `${basePath}/alice.png`;
   };
@@ -43,7 +43,7 @@ const CharacterSymbolIcons: React.FC<CharacterSymbolIconsProps> = ({
   // クラス名からファイル名への変換
   const getClassIconPath = (className: string): string => {
     const basePath = '/src/components/systems/nechronica/images/class';
-    
+
     const classMapping: Record<string, string> = {
       'バロック': 'baroque',
       'ゴシック': 'gothic',
@@ -53,7 +53,7 @@ const CharacterSymbolIcons: React.FC<CharacterSymbolIconsProps> = ({
       'ステイシー': 'stacy',
       'タナトス': 'thanatos',
     };
-    
+
     const fileName = classMapping[className];
     return fileName ? `${basePath}/${fileName}.png` : `${basePath}/gothic.png`;
   };
@@ -61,7 +61,7 @@ const CharacterSymbolIcons: React.FC<CharacterSymbolIconsProps> = ({
   // 表示するアイコンを決定
   const getDisplayIcons = () => {
     const icons: Array<{ type: 'position' | 'class'; path: string; name: string }> = [];
-    
+
     // ポジションは必須（最優先）
     if (position) {
       icons.push({
@@ -70,7 +70,7 @@ const CharacterSymbolIcons: React.FC<CharacterSymbolIconsProps> = ({
         name: position,
       });
     }
-    
+
     // メインクラス
     if (mainClass) {
       icons.push({
@@ -79,7 +79,7 @@ const CharacterSymbolIcons: React.FC<CharacterSymbolIconsProps> = ({
         name: mainClass,
       });
     }
-    
+
     // サブクラス（メインクラスと異なる場合のみ）
     if (subClass && subClass !== mainClass) {
       icons.push({
@@ -88,7 +88,7 @@ const CharacterSymbolIcons: React.FC<CharacterSymbolIconsProps> = ({
         name: subClass,
       });
     }
-    
+
     return icons;
   };
 
@@ -118,11 +118,12 @@ const CharacterSymbolIcons: React.FC<CharacterSymbolIconsProps> = ({
               padding: '4px',
               boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
             }}
-            onError={(e) => {
+            onError={e => {
               // 画像読み込みエラー時のフォールバック
-              const fallbackPath = icon.type === 'position' 
-                ? '/src/components/systems/nechronica/images/position/alice.png'
-                : '/src/components/systems/nechronica/images/class/gothic.png';
+              const fallbackPath =
+                icon.type === 'position'
+                  ? '/src/components/systems/nechronica/images/position/alice.png'
+                  : '/src/components/systems/nechronica/images/class/gothic.png';
               e.currentTarget.src = fallbackPath;
             }}
           />

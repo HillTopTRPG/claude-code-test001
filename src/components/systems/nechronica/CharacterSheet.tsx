@@ -187,12 +187,12 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onManeuverEd
   // プロフィールからポジション・クラス情報を抽出
   const extractProfileInfo = () => {
     if (!character.profile) return { position: '', mainClass: '', subClass: '' };
-    
+
     const lines = character.profile.split('\n');
     let position = '';
     let mainClass = '';
     let subClass = '';
-    
+
     lines.forEach(line => {
       if (line.includes('ポジション:')) {
         position = line.replace('ポジション:', '').trim();
@@ -202,7 +202,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onManeuverEd
         subClass = line.replace('サブクラス:', '').trim();
       }
     });
-    
+
     return { position, mainClass, subClass };
   };
 
@@ -214,7 +214,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onManeuverEd
       <Card style={{ marginBottom: '20px' }}>
         <Row gutter={[16, 16]} align="middle">
           <Col xs={24} md={12}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '10px' }}>
+            <div
+              style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '10px' }}
+            >
               <Title level={2} style={{ margin: 0, color: '#722ed1' }}>
                 {character.name}
               </Title>
