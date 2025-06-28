@@ -1,0 +1,129 @@
+name: Auto Merge Approved PR
+
+on:
+  pull_request_review:
+    types: [submitted]
+  pull_request:
+    types: [synchronize]
+
+jobs:
+  auto-merge:
+    if: github.event.review.state == 'approved' || github.event.action == 'synchronize'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Check if PR is approved and ready
+        id: check-status
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request?.number || context.payload.number
+            });
+            
+            // Claude AI Botが作成したPRのみ対象
+            if (pr.user.login !== 'claude-ai-assistant-for-hilltop[bot]') {
+              console.log('PR not created by Claude AI Bot, skipping');
+              return { shouldMerge: false };
+            }
+            
+            // レビューを取得
+            const { data: reviews } = await github.rest.pulls.listReviews({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number
+            });
+            
+            // 最新のレビューをユーザーごとに取得
+            const latestReviews = {};
+            reviews.forEach(review => {
+              latestReviews[review.user.login] = review;
+            });
+            
+            // オーナー（あなた）のApprovalを確認
+            const ownerReview = latestReviews['${{ github.repository_owner }}'];
+            const isApproved = ownerReview && ownerReview.state === 'APPROVED';
+            
+            // ステータスチェックを確認
+            const { data: checks } = await github.rest.checks.listForRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: pr.head.sha
+            });
+            
+            const allChecksPassed = checks.check_runs.every(check => 
+              check.status === 'completed' && check.conclusion === 'success'
+            );
+            
+            console.log(`PR #${pr.number}:`);
+            console.log(`- Created by: ${pr.user.login}`);
+            console.log(`- Owner approved: ${isApproved}`);
+            console.log(`- All checks passed: ${allChecksPassed}`);
+            console.log(`- Mergeable: ${pr.mergeable}`);
+            
+            const shouldMerge = isApproved && allChecksPassed && pr.mergeable;
+            
+            return {
+              shouldMerge,
+              prNumber: pr.number,
+              headRef: pr.head.ref,
+              baseRef: pr.base.ref
+            };
+      
+      - name: Auto merge PR
+        if: fromJSON(steps.check-status.outputs.result).shouldMerge
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const result = ${{ steps.check-status.outputs.result }};
+            
+            try {
+              // PRをマージ
+              await github.rest.pulls.merge({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: result.prNumber,
+                commit_title: `Auto-merge PR #${result.prNumber}`,
+                commit_message: 'Automatically merged by GitHub Actions after approval\n\n🤖 Generated with [Claude Code](https://claude.ai/code)',
+                merge_method: 'squash'
+              });
+              
+              console.log(`✅ Successfully merged PR #${result.prNumber}`);
+              
+              // ブランチを削除（少し待ってから）
+              await new Promise(resolve => setTimeout(resolve, 2000));
+              
+              try {
+                await github.rest.git.deleteRef({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  ref: `heads/${result.headRef}`
+                });
+                console.log(`✅ Successfully deleted branch: ${result.headRef}`);
+              } catch (deleteError) {
+                console.log(`⚠️ Failed to delete branch: ${deleteError.message}`);
+              }
+              
+            } catch (error) {
+              console.error(`❌ Failed to merge PR: ${error.message}`);
+              throw error;
+            }
+      
+      - name: Post merge comment
+        if: fromJSON(steps.check-status.outputs.result).shouldMerge
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const result = ${{ steps.check-status.outputs.result }};
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: result.prNumber,
+              body: '🎉 PRが自動的にマージされ、ブランチが削除されました！\n\n✅ Approved by repository owner\n✅ All checks passed\n✅ Auto-merged and branch deleted\n\n🤖 Automated by GitHub Actions'
+            });
