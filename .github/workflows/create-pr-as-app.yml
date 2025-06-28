@@ -1,0 +1,39 @@
+name: Create PR as GitHub Actions Bot
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_branch:
+        description: 'Source branch name'
+        required: true
+        default: 'feature/character-symbol-icons'
+      pr_title:
+        description: 'PR Title'
+        required: true
+        default: 'feat: キャラクターシンボルアイコン表示機能を追加'
+
+jobs:
+  create-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_branch }}
+          
+      - name: Create Pull Request
+        uses: actions/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: ${{ inputs.pr_title }}
+          body: |
+            ## Summary
+            - CharacterSymbolIconsコンポーネントを新規作成してキャラクターの象徴となるアイコンを表示
+            - ポジション（最優先）→メインクラス→サブクラスの順で最大3つのアイコンを表示
+            - メインクラスとサブクラスが同じ場合は重複を回避して2つのアイコン表示
+            - キャラクターシート基本情報部分にシンボルアイコンを統合
+            
+            🤖 Generated with [Claude Code](https://claude.ai/code)
+          branch: ${{ inputs.source_branch }}
+          author: "Claude AI <claude@anthropic.com>"
+          committer: "github-actions[bot] <github-actions[bot]@users.noreply.github.com>"
