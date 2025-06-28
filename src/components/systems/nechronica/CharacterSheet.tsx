@@ -586,7 +586,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
                                 flexDirection: 'column',
                                 alignItems: 'center',
                                 gap: '2px',
-                                width: '60px',
+                                width: '68px',
                               }}
                             >
                               <div
@@ -604,13 +604,11 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
                                 }}
                               >
                                 {maneuver.name}
-                                {maneuver.damaged && ' ×'}
-                                {maneuver.used && ' ✓'}
                               </div>
                               <div
                                 style={{
-                                  width: '40px',
-                                  height: '40px',
+                                  width: '64px',
+                                  height: '64px',
                                   border: `2px solid ${getAttachmentColor(attachment)}`,
                                   borderRadius: '4px',
                                   display: 'flex',
@@ -629,8 +627,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
                                   src={getManeuverIconPath(maneuver.name, attachment)}
                                   alt={maneuver.name}
                                   style={{
-                                    width: '32px',
-                                    height: '32px',
+                                    width: '48px',
+                                    height: '48px',
                                     objectFit: 'contain',
                                     position: 'relative',
                                     zIndex: 1,
@@ -641,24 +639,38 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
                                       '/src/components/systems/nechronica/images/unknown.png';
                                   }}
                                 />
-                                {/* 損傷マーク */}
-                                {maneuver.damaged && (
-                                  <div
+                                {/* 状態マーク（損傷状態が優先） */}
+                                {maneuver.damaged ? (
+                                  <img
+                                    src="/src/components/systems/nechronica/images/mark/lost.png"
+                                    alt="損傷"
                                     style={{
                                       position: 'absolute',
-                                      top: '50%',
-                                      left: '50%',
-                                      transform: 'translate(-50%, -50%)',
-                                      fontSize: '20px',
-                                      color: '#ff4d4f',
-                                      fontWeight: 'bold',
-                                      textShadow: '1px 1px 2px rgba(0,0,0,0.7)',
+                                      top: '0px',
+                                      left: '0px',
+                                      width: '100%',
+                                      height: '100%',
+                                      objectFit: 'cover',
+                                      borderRadius: '4px',
                                       zIndex: 2,
                                     }}
-                                  >
-                                    ×
-                                  </div>
-                                )}
+                                  />
+                                ) : maneuver.used ? (
+                                  <img
+                                    src="/src/components/systems/nechronica/images/mark/used.png"
+                                    alt="使用済み"
+                                    style={{
+                                      position: 'absolute',
+                                      top: '0px',
+                                      left: '0px',
+                                      width: '100%',
+                                      height: '100%',
+                                      objectFit: 'cover',
+                                      borderRadius: '4px',
+                                      zIndex: 2,
+                                    }}
+                                  />
+                                ) : null}
                               </div>
                               {/* 状態変更ボタン */}
                               {onManeuverStatusChange && (
