@@ -22,17 +22,25 @@ test.describe('マニューバ状態切り替え機能テスト', () => {
     await page.goto('http://localhost:5173/systems/nechronica');
     await page.screenshot({ path: 'test-results/01-page-loaded.png' });
     
-    // キャラクターURLを入力
-    const inputField = page.locator('input').first();
+    // キャラクター種別選択（デフォルトでドールが選択されている）
+    const typeSelect = page.locator('div:has(h5:has-text("キャラクター種別")) .ant-select');
+    await page.screenshot({ path: 'test-results/01-1-type-selection.png' });
+    
+    // キャラクターURLを入力（修正されたセレクターを使用）
+    const inputField = page.locator('input[placeholder*="ID番号のみ"]');
     await inputField.fill(TEST_CHARACTER_URL);
     await page.screenshot({ path: 'test-results/02-url-entered.png' });
     
     await page.click('button:has-text("取得")');
     await page.screenshot({ path: 'test-results/03-fetch-clicked.png' });
     
-    // キャラクターデータの読み込み完了を待機
-    await page.waitForSelector('div[style*="width: 68px"][style*="cursor: pointer"]', { timeout: 10000 });
+    // キャラクターデータの読み込み完了を待機（キャラクター名で判定）
+    await page.waitForSelector('h2:has-text("しかばねソロリティ")', { timeout: 15000 });
     await page.screenshot({ path: 'test-results/04-data-loaded.png' });
+    
+    // マニューバカードが表示されるまで追加で待機
+    await page.waitForSelector('div[style*="width: 68px"][style*="cursor: pointer"]', { timeout: 5000 });
+    await page.screenshot({ path: 'test-results/04-1-maneuvers-loaded.png' });
   });
 
   test('1. マニューバの使用済み状態ボタンが正常に動作することを確認', async () => {
