@@ -1,4 +1,4 @@
-name: Create PR as GitHub Actions Bot
+name: Create PR as Claude AI App
 
 on:
   workflow_dispatch:
@@ -6,31 +6,43 @@ on:
       source_branch:
         description: 'Source branch name'
         required: true
-        default: 'feature/character-symbol-icons'
+        default: 'feature/example'
       pr_title:
         description: 'PR Title'
         required: true
-        default: 'feat: キャラクターシンボルアイコン表示機能を追加'
+        default: 'feat: 新機能の追加'
+      pr_body:
+        description: 'PR Body'
+        required: false
+        default: |
+          ## Summary
+          新機能を追加しました。
+          
+          🤖 Generated with [Claude Code](https://claude.ai/code)
 
 jobs:
   create-pr:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write
     steps:
+      - name: Generate Claude AI App Token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.CLAUDE_APP_ID }}
+          private-key: ${{ secrets.CLAUDE_APP_PRIVATE_KEY }}
+          
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          token: ${{ steps.app-token.outputs.token }}
           ref: ${{ inputs.source_branch }}
-
+          
       - name: Create Pull Request
         run: |
           gh pr create \
             --title "${{ inputs.pr_title }}" \
-            --body "
-          🤖 Generated with [Claude Code](https://claude.ai/code)" \
+            --body "${{ inputs.pr_body }}" \
             --head "${{ inputs.source_branch }}" \
             --base main
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
