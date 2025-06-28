@@ -98,6 +98,27 @@ const NechronicaPage: React.FC = () => {
     }
   };
 
+  const handleManeuverStatusChange = (
+    maneuverIndex: number,
+    field: 'damaged' | 'used',
+    value: boolean
+  ) => {
+    if (character) {
+      const updatedCharacter = {
+        ...character,
+        maneuvers: character.maneuvers.map((maneuver, index) =>
+          index === maneuverIndex ? { ...maneuver, [field]: value } : maneuver
+        ),
+      };
+      setCharacter(updatedCharacter);
+      
+      // 操作フィードバック
+      const action = value ? '設定' : '解除';
+      const statusName = field === 'damaged' ? '損傷' : '使用済み';
+      message.success(`${character.maneuvers[maneuverIndex].name}を${statusName}に${action}しました`);
+    }
+  };
+
   return (
     <Layout style={{ minHeight: '100vh' }}>
       {isAuthenticated ? (
@@ -119,7 +140,11 @@ const NechronicaPage: React.FC = () => {
                 新しいキャラクターを表示
               </Button>
             </div>
-            <CharacterSheet character={character} onManeuverEdit={handleManeuverEdit} />
+            <CharacterSheet 
+              character={character} 
+              onManeuverEdit={handleManeuverEdit}
+              onManeuverStatusChange={handleManeuverStatusChange}
+            />
           </div>
         ) : (
           // URL入力画面

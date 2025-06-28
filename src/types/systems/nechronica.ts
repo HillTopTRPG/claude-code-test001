@@ -53,6 +53,8 @@ export interface NechronicaManeuver {
   description: string;
   attachment: 'position' | 'main-class' | 'sub-class' | 'head' | 'arm' | 'body' | 'leg';
   powerType: number; // 0: なし, 1: 通常, 2: 必殺技, 3: 行動値増加, 4: 補助, 5: 妨害, 6: 防御/生贄, 7: 移動
+  damaged?: boolean; // 損傷状態
+  used?: boolean; // 使用済み状態（1ターンあたりの制限など）
 }
 
 export interface MemoryFragment {
