@@ -227,3 +227,48 @@ Claude CodeからPRを直接作成する場合は、以下のスクリプトを�
 - ユーザーがApprove・マージ可能
 - タイトルと詳細を事前に指定可能
 - Approve後に自動マージ・ブランチ削除機能
+
+### PR作成時の画面キャプチャ
+
+UI関連の変更を含むPR作成時は、必ず画面キャプチャを含めて視覚的なドキュメンテーションを提供する：
+
+1. **スクリーンショット取得**: 変更前後、または主要な状態変化を示すスクリーンショットを取得
+2. **GitHub Releases活用**: スクリーンショットをGitHub Releasesにアップロードして画像をホスト
+3. **PR説明文追加**: 画像へのリンクと説明を含む包括的なPR説明文を作成
+
+#### 画像表示形式
+
+**既存UIの変更系修正の場合**: GitHubのMarkdownテーブル記法を使用して変更前後を比較表示
+
+```markdown
+| 変更前 | 変更後 |
+|--------|--------|
+| ![Before](URL_to_before_image) | ![After](URL_to_after_image) |
+| 説明: 変更前の状態 | 説明: 変更後の状態 |
+```
+
+**新機能追加の場合**: 主要な状態や機能を段階的に表示
+
+```markdown
+### 機能名
+![Feature Screenshot](URL_to_image)
+機能の説明...
+```
+
+#### 画像ホスティング手順
+
+```bash
+# 1. GitHub Releaseを作成（タイムスタンプ付きタグ）
+gh release create "screenshots-$(date +%Y%m%d-%H%M%S)" --title "Screenshots for PR #XX" --notes "Visual documentation"
+
+# 2. スクリーンショットをアップロード
+gh release upload [release-tag] before.png after.png feature1.png feature2.png
+
+# 3. PR説明文に比較テーブルを追加
+gh pr comment [pr-number] --body "$(cat <<'EOF'
+| 変更前 | 変更後 |
+|--------|--------|
+| <img src="https://github.com/owner/repo/releases/download/[release-tag]/before.png" alt="Before" width="400"> | <img src="https://github.com/owner/repo/releases/download/[release-tag]/after.png" alt="After" width="400"> |
+EOF
+)"
+```

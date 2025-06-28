@@ -93,6 +93,10 @@ test.describe('マニューバ状態切り替え機能テスト', () => {
   });
 
   test('3. 状態変更時の視覚的フィードバックが適切に表示されることを確認', async () => {
+    // マニューバセクションまでスクロール
+    await page.locator('text=マニューバ').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(500); // スクロール完了を待機
+    
     const firstManeuver = page.locator('div[style*="width: 68px"][style*="cursor: pointer"]').first();
     await page.screenshot({ path: 'test-results/test3-01-initial-visual.png' });
     
