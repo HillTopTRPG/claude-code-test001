@@ -188,14 +188,14 @@ amplify/                # Amplify設定ファイル
 export CLAUDE_APP_ID=1474478
 
 # プライベートキーファイルのパス
-export CLAUDE_APP_PRIVATE_KEY_PATH=/path/to/claude-ai-assistant-for-hilltop.private-key.pem
+export CLAUDE_APP_PRIVATE_KEY_PATH=~/.ssh/claude-ai-assistant-for-hilltop.2025-06-27.private-key.pem
 ```
 
 永続化する場合は、`.bashrc` または `.zshrc` に追加：
 
 ```bash
 echo 'export CLAUDE_APP_ID=1474478' >> ~/.bashrc
-echo 'export CLAUDE_APP_PRIVATE_KEY_PATH=/path/to/claude-ai-assistant-for-hilltop.private-key.pem' >> ~/.bashrc
+echo 'export CLAUDE_APP_PRIVATE_KEY_PATH=~/.ssh/claude-ai-assistant-for-hilltop.2025-06-27.private-key.pem' >> ~/.bashrc
 source ~/.bashrc
 ```
 
