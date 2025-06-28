@@ -274,7 +274,11 @@ const convertPowerHanteiToAttachment = (
   hantei: string | number
 ): 'position' | 'main-class' | 'sub-class' | 'head' | 'arm' | 'body' | 'leg' => {
   const hanteiNum = Number(hantei);
-  const hanteiMapping: Record<number, 'position' | 'main-class' | 'sub-class' | 'head' | 'arm' | 'body' | 'leg'> = {
+
+  const hanteiMapping: Record<
+    number,
+    'position' | 'main-class' | 'sub-class' | 'head' | 'arm' | 'body' | 'leg'
+  > = {
     1: 'position',
     2: 'main-class',
     3: 'sub-class',
@@ -283,7 +287,7 @@ const convertPowerHanteiToAttachment = (
     6: 'body',
     7: 'leg',
   };
-  
+
   return hanteiMapping[hanteiNum] || 'body'; // デフォルトは胴体
 };
 
