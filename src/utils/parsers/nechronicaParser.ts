@@ -52,27 +52,27 @@ interface RawNechronicaApiData {
  */
 // 基本パーツ名のマッピング（優先順位が高い）
 const basicPartsMapping: Record<string, string> = {
-  'のうみそ': 'brain',
-  '脳みそ': 'brain',
-  'めだま': 'eye', 
-  '眼球': 'eye',
-  'あご': 'jaw',
-  '顎': 'jaw',
-  'こぶし': 'fist',
-  '拳': 'fist',
-  'うで': 'arm',
-  '腕': 'arm',
-  'かた': 'shoulder',
-  '肩': 'shoulder', 
-  'せぼね': 'spine',
-  '背骨': 'spine',
-  'はらわた': 'viscera',
-  '内臓': 'viscera',
-  'ほね': 'bone',
-  '骨': 'bone',
-  'あし': 'leg',
-  '脚': 'leg',
-  '足': 'leg'
+  のうみそ: 'brain',
+  脳みそ: 'brain',
+  めだま: 'eye',
+  眼球: 'eye',
+  あご: 'jaw',
+  顎: 'jaw',
+  こぶし: 'fist',
+  拳: 'fist',
+  うで: 'arm',
+  腕: 'arm',
+  かた: 'shoulder',
+  肩: 'shoulder',
+  せぼね: 'spine',
+  背骨: 'spine',
+  はらわた: 'viscera',
+  内臓: 'viscera',
+  ほね: 'bone',
+  骨: 'bone',
+  あし: 'leg',
+  脚: 'leg',
+  足: 'leg',
 };
 
 /**
@@ -80,30 +80,30 @@ const basicPartsMapping: Record<string, string> = {
  */
 export const getManeuverIconPath = (maneuverName: string, attachment: string): string => {
   const basePath = '/src/components/systems/nechronica/images';
-  
+
   // 基本パーツのチェック（優先）
   for (const [partName, fileName] of Object.entries(basicPartsMapping)) {
     if (maneuverName.includes(partName)) {
       return `${basePath}/maneuver-base/${fileName}.png`;
     }
   }
-  
+
   // 部位別のフォールバック
   const attachmentMapping: Record<string, string> = {
-    'head': 'head',
-    'arm': 'arm', 
-    'body': 'body',
-    'leg': 'leg',
-    'position': 'skill',
+    head: 'head',
+    arm: 'arm',
+    body: 'body',
+    leg: 'leg',
+    position: 'skill',
     'main-class': 'skill',
-    'sub-class': 'skill'
+    'sub-class': 'skill',
   };
-  
+
   const iconName = attachmentMapping[attachment];
   if (iconName) {
     return `${basePath}/maneuver/${iconName}.png`;
   }
-  
+
   // デフォルト
   return `${basePath}/unknown.png`;
 };
@@ -114,7 +114,7 @@ export const getManeuverIconPath = (maneuverName: string, attachment: string): s
 export const getManeuverBackgroundPath = (powerType: string | number): string => {
   const basePath = '/src/components/systems/nechronica/images';
   const typeNum = Number(powerType);
-  
+
   // Power_Type値に対応するファイル名
   const typeMapping: Record<number, string> = {
     0: '0', // なし
@@ -126,25 +126,26 @@ export const getManeuverBackgroundPath = (powerType: string | number): string =>
     6: '6', // 防御/生贄
     7: '7', // 移動
   };
-  
+
   const fileName = typeMapping[typeNum];
   if (fileName) {
     return `${basePath}/maneuver-back/${fileName}.png`;
   }
-  
+
   // デフォルト（なし）
   return `${basePath}/maneuver-back/0.png`;
 };
 
-export const parseNechronicaData = (rawData: RawNechronicaApiData | Record<string, unknown>): NechronicaCharacter => {
+export const parseNechronicaData = (
+  rawData: RawNechronicaApiData | Record<string, unknown>
+): NechronicaCharacter => {
   try {
     // データ構造の確認
     console.log('Raw character data:', rawData);
 
     // 基本情報の抽出（実際のデータ構造に基づく）
-    const characterName = safeGetString(rawData.pc_name) || 
-                         safeGetString(rawData.characterName) || 
-                         '名前不明';
+    const characterName =
+      safeGetString(rawData.pc_name) || safeGetString(rawData.characterName) || '名前不明';
     const sex = safeGetString(rawData.sex);
     const tags = safeGetString(rawData.pc_tags);
     const position = safeGetString(rawData.Position_Name);
@@ -201,8 +202,6 @@ export const parseNechronicaData = (rawData: RawNechronicaApiData | Record<strin
     throw new Error('キャラクターデータの解析に失敗しました');
   }
 };
-
-
 
 /**
  * ネクロニカの部位情報を解析
@@ -271,9 +270,10 @@ const parseNechronicaSkills = (rawData: RawNechronicaApiData | Record<string, un
 /**
  * Power_hantei値をattachment値に変換
  */
-const convertPowerHanteiToAttachment = (hantei: string | number): 'position' | 'main-class' | 'sub-class' | 'head' | 'arm' | 'body' | 'leg' => {
+const convertPowerHanteiToAttachment = (
+  hantei: string | number
+): 'position' | 'main-class' | 'sub-class' | 'head' | 'arm' | 'body' | 'leg' => {
   const hanteiNum = Number(hantei);
-  
   const hanteiMapping: Record<number, 'position' | 'main-class' | 'sub-class' | 'head' | 'arm' | 'body' | 'leg'> = {
     1: 'position',
     2: 'main-class',
