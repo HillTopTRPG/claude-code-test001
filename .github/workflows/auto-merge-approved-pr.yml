@@ -5,10 +5,17 @@ on:
     types: [submitted]
   pull_request:
     types: [synchronize]
+  check_run:
+    types: [completed]
+  status: {}
 
 jobs:
   auto-merge:
-    if: github.event.review.state == 'approved' || github.event.action == 'synchronize'
+    # 以下のいずれかの条件で実行:
+    # 1. レビューがsubmittedされた
+    # 2. PRが更新された (synchronize)
+    # 3. チェックランが完了した
+    # 4. ステータスが更新された
     runs-on: ubuntu-latest
     
     steps:
@@ -25,11 +32,45 @@ jobs:
         with:
           github-token: ${{ steps.app-token.outputs.token }}
           script: |
-            const { data: pr } = await github.rest.pulls.get({
+            let prNumber;
+            let pr;
+            
+            // イベントの種類に応じてPR番号を取得
+            if (context.payload.pull_request) {
+              // pull_request_review, pull_request イベント
+              prNumber = context.payload.pull_request.number;
+            } else if (context.payload.check_run && context.payload.check_run.pull_requests.length > 0) {
+              // check_run イベント
+              prNumber = context.payload.check_run.pull_requests[0].number;
+            } else if (context.eventName === 'status') {
+              // status イベント - SHAからPRを検索
+              const { data: prs } = await github.rest.pulls.list({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state: 'open',
+                head: `${context.repo.owner}:${context.payload.sha}`
+              });
+              
+              if (prs.length === 0) {
+                console.log('No open PRs found for this commit');
+                return { shouldMerge: false };
+              }
+              
+              prNumber = prs[0].number;
+            } else {
+              console.log('Could not determine PR number from event');
+              return { shouldMerge: false };
+            }
+            
+            console.log(`Processing PR #${prNumber}`);
+            
+            const { data: prData } = await github.rest.pulls.get({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              pull_number: context.payload.pull_request?.number || context.payload.number
+              pull_number: prNumber
             });
+            
+            pr = prData;
             
             // Claude AI Botが作成したPRのみ対象
             if (pr.user.login !== 'claude-ai-assistant-for-hilltop[bot]') {
