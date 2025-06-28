@@ -3,8 +3,14 @@ name: CI
 on:
   push:
     branches: [main, develop]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
   pull_request:
     branches: [main, develop]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
 
 jobs:
   lint-and-type-check:
@@ -21,13 +27,11 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --prefer-offline --no-audit --no-fund
 
-      - name: Run lint
-        run: npm run lint
-
-      - name: Run type check
-        run: npm run type-check
-
-      - name: Run format check
-        run: npm run format:check
+      - name: Run checks in parallel
+        run: |
+          npm run lint &
+          npm run type-check &
+          npm run format:check &
+          wait

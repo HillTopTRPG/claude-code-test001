@@ -1,0 +1,36 @@
+name: Create PR as GitHub Actions Bot
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_branch:
+        description: 'Source branch name'
+        required: true
+        default: 'feature/character-symbol-icons'
+      pr_title:
+        description: 'PR Title'
+        required: true
+        default: 'feat: キャラクターシンボルアイコン表示機能を追加'
+
+jobs:
+  create-pr:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_branch }}
+
+      - name: Create Pull Request
+        run: |
+          gh pr create \
+            --title "${{ inputs.pr_title }}" \
+            --body "
+          🤖 Generated with [Claude Code](https://claude.ai/code)" \
+            --head "${{ inputs.source_branch }}" \
+            --base main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
