@@ -5,10 +5,21 @@ on:
     types: [submitted]
   pull_request:
     types: [synchronize]
+  check_run:
+    types: [completed]
+  status: {}
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
 
 jobs:
   auto-merge:
-    if: github.event.review.state == 'approved' || github.event.action == 'synchronize'
+    # 以下のいずれかの条件で実行:
+    # 1. レビューがsubmittedされた
+    # 2. PRが更新された (synchronize)
+    # 3. チェックランが完了した
+    # 4. ステータスが更新された
+    # 5. CIワークフローが完了した (workflow_run)
     runs-on: ubuntu-latest
     
     steps:
@@ -25,11 +36,65 @@ jobs:
         with:
           github-token: ${{ steps.app-token.outputs.token }}
           script: |
-            const { data: pr } = await github.rest.pulls.get({
+            let prNumber;
+            let pr;
+            
+            // イベントの種類に応じてPR番号を取得
+            if (context.payload.pull_request) {
+              // pull_request_review, pull_request イベント
+              prNumber = context.payload.pull_request.number;
+            } else if (context.payload.check_run && context.payload.check_run.pull_requests.length > 0) {
+              // check_run イベント
+              prNumber = context.payload.check_run.pull_requests[0].number;
+            } else if (context.eventName === 'status') {
+              // status イベント - SHAからPRを検索
+              const { data: prs } = await github.rest.pulls.list({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state: 'open',
+                head: `${context.repo.owner}:${context.payload.sha}`
+              });
+              
+              if (prs.length === 0) {
+                console.log('No open PRs found for this commit');
+                return { shouldMerge: false };
+              }
+              
+              prNumber = prs[0].number;
+            } else if (context.eventName === 'workflow_run' && context.payload.workflow_run) {
+              // workflow_run イベント - CI完了時
+              const workflowRun = context.payload.workflow_run;
+              
+              // Pull requestからSHAに基づいてPRを検索
+              const { data: prs } = await github.rest.pulls.list({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state: 'open'
+              });
+              
+              const matchedPR = prs.find(pr => pr.head.sha === workflowRun.head_sha);
+              
+              if (!matchedPR) {
+                console.log(`No open PR found for workflow run SHA: ${workflowRun.head_sha}`);
+                return { shouldMerge: false };
+              }
+              
+              prNumber = matchedPR.number;
+              console.log(`Found PR #${prNumber} for workflow run: ${workflowRun.name}`);
+            } else {
+              console.log('Could not determine PR number from event');
+              return { shouldMerge: false };
+            }
+            
+            console.log(`Processing PR #${prNumber}`);
+            
+            const { data: prData } = await github.rest.pulls.get({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              pull_number: context.payload.pull_request?.number || context.payload.number
+              pull_number: prNumber
             });
+            
+            pr = prData;
             
             // Claude AI Botが作成したPRのみ対象
             if (pr.user.login !== 'claude-ai-assistant-for-hilltop[bot]') {
@@ -76,21 +141,34 @@ jobs:
               check.status === 'completed' && check.conclusion === 'success'
             );
             
+            // 実行中のチェックがあるかどうかを確認
+            const hasRunningChecks = relevantChecks.some(check => 
+              check.status !== 'completed' || check.conclusion === null
+            );
+            
             const statusesPassed = statuses.state === 'success' || 
               statuses.statuses.length === 0 || 
               statuses.statuses.every(status => status.state === 'success');
             
             const allChecksPassed = checksPassed && statusesPassed;
             
-            console.log(`Check runs (${relevantChecks.length}):`, relevantChecks.map(c => `${c.name}: ${c.conclusion}`));
+            console.log(`Check runs (${relevantChecks.length}):`, relevantChecks.map(c => `${c.name}: ${c.status}/${c.conclusion}`));
             console.log(`Status checks (${statuses.statuses.length}):`, statuses.statuses.map(s => `${s.context}: ${s.state}`));
             console.log(`Combined status: ${statuses.state}`);
+            console.log(`Has running checks: ${hasRunningChecks}`);
             
             console.log(`PR #${pr.number}:`);
             console.log(`- Created by: ${pr.user.login}`);
             console.log(`- Owner approved: ${isApproved}`);
             console.log(`- All checks passed: ${allChecksPassed}`);
+            console.log(`- Has running checks: ${hasRunningChecks}`);
             console.log(`- Mergeable: ${pr.mergeable}`);
+            
+            // 実行中のチェックがある場合は、マージしない（後で再実行される）
+            if (hasRunningChecks) {
+              console.log('⏳ Checks are still running, will retry when they complete');
+              return { shouldMerge: false };
+            }
             
             const shouldMerge = isApproved && allChecksPassed && pr.mergeable;
             

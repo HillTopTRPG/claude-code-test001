@@ -120,8 +120,22 @@ PR_URL=$(GITHUB_TOKEN="$ACCESS_TOKEN" gh pr create \
 if [ $? -eq 0 ]; then
     echo "✅ PR created successfully using Claude AI App authentication!"
     echo "🔗 $PR_URL"
+    
+    # Extract PR number from URL and add reviewer
+    PR_NUMBER=$(echo "$PR_URL" | grep -o '[0-9]*$')
+    
+    echo "👤 Adding reviewer..."
+    REPO_OWNER=$(gh repo view --json owner -q '.owner.login')
+    
+    if GITHUB_TOKEN="$ACCESS_TOKEN" gh pr edit "$PR_NUMBER" --add-reviewer "$REPO_OWNER"; then
+        echo "✅ Added $REPO_OWNER as reviewer"
+    else
+        echo "⚠️ Could not add reviewer (PR still created successfully)"
+    fi
+    
     echo ""
     echo "👤 Created by: claude-ai-assistant-for-hilltop[bot]"
+    echo "👀 Reviewer: $REPO_OWNER"
     echo "✋ You can now approve and merge this PR"
 else
     echo "❌ Failed to create PR"
