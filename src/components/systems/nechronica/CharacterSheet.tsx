@@ -29,13 +29,19 @@ import {
   CloseOutlined,
 } from '@ant-design/icons';
 import type { NechronicaCharacter } from '../../../types/systems/nechronica';
-import { getManeuverIconPath, getManeuverBackgroundPath } from '../../../utils/parsers/nechronicaParser';
+import {
+  getManeuverIconPath,
+  getManeuverBackgroundPath,
+} from '../../../utils/parsers/nechronicaParser';
 
 const { Title, Text, Paragraph } = Typography;
 
 interface CharacterSheetProps {
   character: NechronicaCharacter;
-  onManeuverEdit?: (maneuverIndex: number, updatedManeuver: NechronicaCharacter['maneuvers'][0]) => void;
+  onManeuverEdit?: (
+    maneuverIndex: number,
+    updatedManeuver: NechronicaCharacter['maneuvers'][0]
+  ) => void;
 }
 
 const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onManeuverEdit }) => {
@@ -47,7 +53,10 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onManeuverEd
   const [form] = Form.useForm();
 
   // 編集処理のハンドラー
-  const handleEditClick = (maneuver: NechronicaCharacter['maneuvers'][0], maneuverIndex: number) => {
+  const handleEditClick = (
+    maneuver: NechronicaCharacter['maneuvers'][0],
+    maneuverIndex: number
+  ) => {
     setEditingManeuver({ maneuver, index: maneuverIndex });
     setPopoverVisible(maneuverIndex);
     form.setFieldsValue({
@@ -133,13 +142,13 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onManeuverEd
   // attachment の日本語名
   const getAttachmentName = (attachment: string) => {
     const names = {
-      'position': 'ポジション',
+      position: 'ポジション',
       'main-class': 'メインクラス',
       'sub-class': 'サブクラス',
-      'head': '頭部',
-      'arm': '腕部',
-      'body': '胴体',
-      'leg': '脚部',
+      head: '頭部',
+      arm: '腕部',
+      body: '胴体',
+      leg: '脚部',
     };
     return names[attachment as keyof typeof names] || attachment;
   };
@@ -147,26 +156,29 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onManeuverEd
   // attachment の色
   const getAttachmentColor = (attachment: string) => {
     const colors = {
-      'position': '#722ed1', // 紫
+      position: '#722ed1', // 紫
       'main-class': '#13c2c2', // シアン
       'sub-class': '#52c41a', // 緑
-      'head': '#ff4d4f', // 赤
-      'arm': '#1890ff', // 青
-      'body': '#faad14', // 黄
-      'leg': '#fa8c16', // オレンジ
+      head: '#ff4d4f', // 赤
+      arm: '#1890ff', // 青
+      body: '#faad14', // 黄
+      leg: '#fa8c16', // オレンジ
     };
     return colors[attachment as keyof typeof colors] || '#d9d9d9';
   };
 
   // マニューバを attachment でグルーピング
-  const groupedManeuvers = character.maneuvers.reduce((groups, maneuver) => {
-    const attachment = maneuver.attachment;
-    if (!groups[attachment]) {
-      groups[attachment] = [];
-    }
-    groups[attachment].push(maneuver);
-    return groups;
-  }, {} as Record<string, typeof character.maneuvers>);
+  const groupedManeuvers = character.maneuvers.reduce(
+    (groups, maneuver) => {
+      const attachment = maneuver.attachment;
+      if (!groups[attachment]) {
+        groups[attachment] = [];
+      }
+      groups[attachment].push(maneuver);
+      return groups;
+    },
+    {} as Record<string, typeof character.maneuvers>
+  );
 
   // グループの表示順序
   const attachmentOrder = ['position', 'main-class', 'sub-class', 'head', 'arm', 'body', 'leg'];
@@ -276,15 +288,15 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onManeuverEd
             <Space direction="vertical" style={{ width: '100%' }} size="large">
               {attachmentOrder
                 .filter(attachment => groupedManeuvers[attachment]?.length > 0)
-                .map((attachment) => (
+                .map(attachment => (
                   <div key={attachment}>
-                    <Title 
-                      level={5} 
-                      style={{ 
-                        margin: '0 0 12px 0', 
+                    <Title
+                      level={5}
+                      style={{
+                        margin: '0 0 12px 0',
                         color: getAttachmentColor(attachment),
                         borderBottom: `2px solid ${getAttachmentColor(attachment)}`,
-                        paddingBottom: '4px'
+                        paddingBottom: '4px',
                       }}
                     >
                       {getAttachmentName(attachment)}
@@ -293,18 +305,23 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onManeuverEd
                       {groupedManeuvers[attachment].map((maneuver, originalIndex) => {
                         const maneuverIndex = character.maneuvers.findIndex(m => m === maneuver);
                         const isEditing = editingManeuver?.index === maneuverIndex;
-                        
+
                         const popoverContent = (
                           <div style={{ maxWidth: '400px' }}>
                             {isEditing ? (
                               // 編集フォーム
-                              <Form
-                                form={form}
-                                layout="vertical"
-                                style={{ margin: 0 }}
-                              >
-                                <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                  <Text strong style={{ fontSize: '14px' }}>マニューバ編集</Text>
+                              <Form form={form} layout="vertical" style={{ margin: 0 }}>
+                                <div
+                                  style={{
+                                    marginBottom: '12px',
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                  }}
+                                >
+                                  <Text strong style={{ fontSize: '14px' }}>
+                                    マニューバ編集
+                                  </Text>
                                   <Space size="small">
                                     <Button
                                       icon={<SaveOutlined />}
@@ -323,11 +340,13 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onManeuverEd
                                     </Button>
                                   </Space>
                                 </div>
-                                
+
                                 <Form.Item
                                   name="name"
                                   label="マニューバ名"
-                                  rules={[{ required: true, message: 'マニューバ名を入力してください' }]}
+                                  rules={[
+                                    { required: true, message: 'マニューバ名を入力してください' },
+                                  ]}
                                   style={{ marginBottom: '12px' }}
                                 >
                                   <Input size="small" />
@@ -345,7 +364,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onManeuverEd
                                 <Form.Item
                                   name="timing"
                                   label="タイミング"
-                                  rules={[{ required: true, message: 'タイミングを入力してください' }]}
+                                  rules={[
+                                    { required: true, message: 'タイミングを入力してください' },
+                                  ]}
                                   style={{ marginBottom: '12px' }}
                                 >
                                   <Input size="small" />
@@ -388,8 +409,17 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onManeuverEd
                             ) : (
                               // 詳細表示
                               <div>
-                                <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                  <Text strong style={{ fontSize: '14px' }}>{maneuver.name}</Text>
+                                <div
+                                  style={{
+                                    marginBottom: '8px',
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                  }}
+                                >
+                                  <Text strong style={{ fontSize: '14px' }}>
+                                    {maneuver.name}
+                                  </Text>
                                   {onManeuverEdit && (
                                     <Button
                                       icon={<EditOutlined />}
@@ -403,10 +433,16 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onManeuverEd
                                   )}
                                 </div>
                                 <Space style={{ marginBottom: '8px' }}>
-                                  <Tag color="orange" style={{ fontSize: '11px', padding: '2px 6px' }}>
+                                  <Tag
+                                    color="orange"
+                                    style={{ fontSize: '11px', padding: '2px 6px' }}
+                                  >
                                     コスト: {maneuver.cost}
                                   </Tag>
-                                  <Tag color="green" style={{ fontSize: '11px', padding: '2px 6px' }}>
+                                  <Tag
+                                    color="green"
+                                    style={{ fontSize: '11px', padding: '2px 6px' }}
+                                  >
                                     {maneuver.timing}
                                   </Tag>
                                 </Space>
@@ -429,9 +465,11 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onManeuverEd
                           <Popover
                             key={originalIndex}
                             content={popoverContent}
-                            trigger={isEditing || popoverVisible === maneuverIndex ? 'click' : 'hover'}
+                            trigger={
+                              isEditing || popoverVisible === maneuverIndex ? 'click' : 'hover'
+                            }
                             open={popoverVisible === maneuverIndex || isEditing ? true : undefined}
-                            onOpenChange={(visible) => {
+                            onOpenChange={visible => {
                               if (!visible && !isEditing) {
                                 setPopoverVisible(null);
                               } else if (visible && !isEditing) {
@@ -440,7 +478,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onManeuverEd
                             }}
                             placement="right"
                             mouseEnterDelay={0.1}
-                            mouseLeaveDelay={isEditing || popoverVisible === maneuverIndex ? 0 : 0.1}
+                            mouseLeaveDelay={
+                              isEditing || popoverVisible === maneuverIndex ? 0 : 0.1
+                            }
                           >
                             <div
                               style={{
@@ -450,48 +490,53 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onManeuverEd
                                 flexDirection: 'column',
                                 alignItems: 'center',
                                 gap: '2px',
-                                width: '60px'
+                                width: '60px',
                               }}
                             >
-                              <div style={{ 
-                                fontSize: '10px', 
-                                lineHeight: '1.1',
-                                textAlign: 'center',
-                                minHeight: '20px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                wordBreak: 'break-all',
-                                color: '#666'
-                              }}>
+                              <div
+                                style={{
+                                  fontSize: '10px',
+                                  lineHeight: '1.1',
+                                  textAlign: 'center',
+                                  minHeight: '20px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  wordBreak: 'break-all',
+                                  color: '#666',
+                                }}
+                              >
                                 {maneuver.name}
                               </div>
-                              <div style={{
-                                width: '40px',
-                                height: '40px',
-                                border: `2px solid ${getAttachmentColor(attachment)}`,
-                                borderRadius: '4px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                position: 'relative',
-                                backgroundImage: `url(${getManeuverBackgroundPath(maneuver.powerType)})`,
-                                backgroundSize: 'cover',
-                                backgroundPosition: 'center',
-                                backgroundRepeat: 'no-repeat'
-                              }}>
-                                <img 
+                              <div
+                                style={{
+                                  width: '40px',
+                                  height: '40px',
+                                  border: `2px solid ${getAttachmentColor(attachment)}`,
+                                  borderRadius: '4px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  position: 'relative',
+                                  backgroundImage: `url(${getManeuverBackgroundPath(maneuver.powerType)})`,
+                                  backgroundSize: 'cover',
+                                  backgroundPosition: 'center',
+                                  backgroundRepeat: 'no-repeat',
+                                }}
+                              >
+                                <img
                                   src={getManeuverIconPath(maneuver.name, attachment)}
                                   alt={maneuver.name}
-                                  style={{ 
-                                    width: '32px', 
+                                  style={{
+                                    width: '32px',
                                     height: '32px',
                                     objectFit: 'contain',
                                     position: 'relative',
-                                    zIndex: 1
+                                    zIndex: 1,
                                   }}
-                                  onError={(e) => {
+                                  onError={e => {
                                     // 画像読み込みエラー時のフォールバック
-                                    e.currentTarget.src = '/src/components/systems/nechronica/images/unknown.png';
+                                    e.currentTarget.src =
+                                      '/src/components/systems/nechronica/images/unknown.png';
                                   }}
                                 />
                               </div>
@@ -555,7 +600,6 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onManeuverEd
           </Col>
         )}
       </Row>
-
     </div>
   );
 };
