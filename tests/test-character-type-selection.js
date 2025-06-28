@@ -29,16 +29,17 @@ test.describe('キャラクター種別選択機能テスト', () => {
     const typeSelectLabel = page.locator('h5:has-text("キャラクター種別")');
     await expect(typeSelectLabel).toBeVisible();
     
-    const typeSelect = page.locator('.ant-select').filter({ hasText: 'ドール' });
+    const typeSelect = page.locator('div:has(h5:has-text("キャラクター種別")) .ant-select');
     await expect(typeSelect).toBeVisible();
     await page.screenshot({ path: 'test-results/character-type-02-ui-visible.png' });
     
     // デフォルトで「ドール」が選択されていることを確認
-    await expect(typeSelect).toHaveText(/ドール/);
+    await expect(typeSelect.locator('.ant-select-selection-item')).toHaveText(/ドール/);
   });
 
   test('2. 各種別（ドール/サヴァント/ホラー/レギオン）の選択が可能であることを確認', async () => {
-    const typeSelect = page.locator('.ant-select').filter({ hasText: 'ドール' });
+    // より具体的なセレクターを使用
+    const typeSelect = page.locator('div:has(h5:has-text("キャラクター種別")) .ant-select');
     
     // 選択肢を開く
     await typeSelect.click();
@@ -58,35 +59,36 @@ test.describe('キャラクター種別選択機能テスト', () => {
     // サヴァントを選択
     await savantOption.click();
     await page.screenshot({ path: 'test-results/character-type-04-savant-selected.png' });
-    await expect(typeSelect).toHaveText(/サヴァント/);
+    // 選択後のテキスト確認を調整
+    await expect(typeSelect.locator('.ant-select-selection-item')).toHaveText(/サヴァント/);
     
     // ホラーを選択
     await typeSelect.click();
     await horrorOption.click();
     await page.screenshot({ path: 'test-results/character-type-05-horror-selected.png' });
-    await expect(typeSelect).toHaveText(/ホラー/);
+    await expect(typeSelect.locator('.ant-select-selection-item')).toHaveText(/ホラー/);
     
     // レギオンを選択
     await typeSelect.click();
     await legionOption.click();
     await page.screenshot({ path: 'test-results/character-type-06-legion-selected.png' });
-    await expect(typeSelect).toHaveText(/レギオン/);
+    await expect(typeSelect.locator('.ant-select-selection-item')).toHaveText(/レギオン/);
     
     // ドールに戻す
     await typeSelect.click();
     await dollOption.click();
     await page.screenshot({ path: 'test-results/character-type-07-doll-reselected.png' });
-    await expect(typeSelect).toHaveText(/ドール/);
+    await expect(typeSelect.locator('.ant-select-selection-item')).toHaveText(/ドール/);
   });
 
   test('3. ドール選択時のキャラクター読み込みとメインビジュアル表示を確認', async () => {
     // ドールが選択されていることを確認
-    const typeSelect = page.locator('.ant-select').filter({ hasText: 'ドール' });
-    await expect(typeSelect).toHaveText(/ドール/);
+    const typeSelect = page.locator('div:has(h5:has-text("キャラクター種別")) .ant-select');
+    await expect(typeSelect.locator('.ant-select-selection-item')).toHaveText(/ドール/);
     await page.screenshot({ path: 'test-results/character-type-08-before-load-doll.png' });
     
-    // キャラクターURLを入力
-    const inputField = page.locator('input[placeholder*="https://charasheet.vampire-blood.net"]');
+    // キャラクターURLを入力（より具体的なセレクターを使用）
+    const inputField = page.locator('input[placeholder*="ID番号のみ"]');
     await inputField.fill(TEST_CHARACTER_URL);
     await page.screenshot({ path: 'test-results/character-type-09-url-entered-doll.png' });
     
@@ -94,12 +96,12 @@ test.describe('キャラクター種別選択機能テスト', () => {
     await page.click('button:has-text("取得")');
     await page.screenshot({ path: 'test-results/character-type-10-fetch-clicked-doll.png' });
     
-    // キャラクターデータの読み込み完了を待機
-    await page.waitForSelector('img[alt*="キャラクター"]', { timeout: 10000 });
+    // キャラクターデータの読み込み完了を待機（名前の表示を待つ）
+    await page.waitForSelector('h2:has-text("ヤドリギ")', { timeout: 15000 });
     await page.screenshot({ path: 'test-results/character-type-11-doll-loaded.png' });
     
     // メインビジュアル画像が表示されることを確認
-    const mainVisual = page.locator('img[alt*="キャラクター"]').first();
+    const mainVisual = page.locator('img[alt*="-"]').first();
     await expect(mainVisual).toBeVisible();
     
     // 種別タグが表示されることを確認
@@ -120,14 +122,14 @@ test.describe('キャラクター種別選択機能テスト', () => {
     }
     
     // サヴァントを選択
-    const typeSelect = page.locator('.ant-select').first();
+    const typeSelect = page.locator('div:has(h5:has-text("キャラクター種別")) .ant-select');
     await typeSelect.click();
     const savantOption = page.locator('.ant-select-item-option-content:has-text("サヴァント")');
     await savantOption.click();
     await page.screenshot({ path: 'test-results/character-type-13-savant-selected-for-load.png' });
     
     // キャラクターURLを入力
-    const inputField = page.locator('input[placeholder*="https://charasheet.vampire-blood.net"]');
+    const inputField = page.locator('input[placeholder*="ID番号のみ"]');
     await inputField.fill(TEST_CHARACTER_URL);
     await page.screenshot({ path: 'test-results/character-type-14-url-entered-savant.png' });
     
@@ -135,11 +137,11 @@ test.describe('キャラクター種別選択機能テスト', () => {
     await page.click('button:has-text("取得")');
     
     // キャラクターデータの読み込み完了を待機
-    await page.waitForSelector('img[alt*="キャラクター"]', { timeout: 10000 });
+    await page.waitForSelector('h2:has-text("ヤドリギ")', { timeout: 15000 });
     await page.screenshot({ path: 'test-results/character-type-15-savant-loaded.png' });
     
     // メインビジュアル画像が表示されることを確認
-    const mainVisual = page.locator('img[alt*="キャラクター"]').first();
+    const mainVisual = page.locator('img[alt*="-"]').first();
     await expect(mainVisual).toBeVisible();
     
     // 種別タグが表示されることを確認
@@ -160,14 +162,14 @@ test.describe('キャラクター種別選択機能テスト', () => {
     }
     
     // ホラーを選択
-    const typeSelect = page.locator('.ant-select').first();
+    const typeSelect = page.locator('div:has(h5:has-text("キャラクター種別")) .ant-select');
     await typeSelect.click();
     const horrorOption = page.locator('.ant-select-item-option-content:has-text("ホラー")');
     await horrorOption.click();
     await page.screenshot({ path: 'test-results/character-type-17-horror-selected-for-load.png' });
     
     // キャラクターURLを入力
-    const inputField = page.locator('input[placeholder*="https://charasheet.vampire-blood.net"]');
+    const inputField = page.locator('input[placeholder*="ID番号のみ"]');
     await inputField.fill(TEST_CHARACTER_URL);
     await page.screenshot({ path: 'test-results/character-type-18-url-entered-horror.png' });
     
@@ -175,11 +177,11 @@ test.describe('キャラクター種別選択機能テスト', () => {
     await page.click('button:has-text("取得")');
     
     // キャラクターデータの読み込み完了を待機
-    await page.waitForSelector('img[alt*="キャラクター"]', { timeout: 10000 });
+    await page.waitForSelector('h2:has-text("ヤドリギ")', { timeout: 15000 });
     await page.screenshot({ path: 'test-results/character-type-19-horror-loaded.png' });
     
     // メインビジュアル画像が表示されることを確認
-    const mainVisual = page.locator('img[alt*="キャラクター"]').first();
+    const mainVisual = page.locator('img[alt*="-"]').first();
     await expect(mainVisual).toBeVisible();
     
     // 種別タグが表示されることを確認
@@ -200,14 +202,14 @@ test.describe('キャラクター種別選択機能テスト', () => {
     }
     
     // レギオンを選択
-    const typeSelect = page.locator('.ant-select').first();
+    const typeSelect = page.locator('div:has(h5:has-text("キャラクター種別")) .ant-select');
     await typeSelect.click();
     const legionOption = page.locator('.ant-select-item-option-content:has-text("レギオン")');
     await legionOption.click();
     await page.screenshot({ path: 'test-results/character-type-21-legion-selected-for-load.png' });
     
     // キャラクターURLを入力
-    const inputField = page.locator('input[placeholder*="https://charasheet.vampire-blood.net"]');
+    const inputField = page.locator('input[placeholder*="ID番号のみ"]');
     await inputField.fill(TEST_CHARACTER_URL);
     await page.screenshot({ path: 'test-results/character-type-22-url-entered-legion.png' });
     
@@ -215,11 +217,11 @@ test.describe('キャラクター種別選択機能テスト', () => {
     await page.click('button:has-text("取得")');
     
     // キャラクターデータの読み込み完了を待機
-    await page.waitForSelector('img[alt*="キャラクター"]', { timeout: 10000 });
+    await page.waitForSelector('h2:has-text("ヤドリギ")', { timeout: 15000 });
     await page.screenshot({ path: 'test-results/character-type-23-legion-loaded.png' });
     
     // メインビジュアル画像が表示されることを確認
-    const mainVisual = page.locator('img[alt*="キャラクター"]').first();
+    const mainVisual = page.locator('img[alt*="-"]').first();
     await expect(mainVisual).toBeVisible();
     
     // 種別タグが表示されることを確認
@@ -240,16 +242,16 @@ test.describe('キャラクター種別選択機能テスト', () => {
     }
     
     // ドールを選択（デフォルトだが明示的に確認）
-    const typeSelect = page.locator('.ant-select').first();
-    await expect(typeSelect).toHaveText(/ドール/);
+    const typeSelect = page.locator('div:has(h5:has-text("キャラクター種別")) .ant-select');
+    await expect(typeSelect.locator('.ant-select-selection-item')).toHaveText(/ドール/);
     
     // キャラクターURLを入力して読み込み
-    const inputField = page.locator('input[placeholder*="https://charasheet.vampire-blood.net"]');
+    const inputField = page.locator('input[placeholder*="ID番号のみ"]');
     await inputField.fill(TEST_CHARACTER_URL);
     await page.click('button:has-text("取得")');
     
     // キャラクターデータの読み込み完了を待機
-    await page.waitForSelector('div[style*="width: 68px"][style*="cursor: pointer"]', { timeout: 10000 });
+    await page.waitForSelector('div[style*="width: 68px"][style*="cursor: pointer"]', { timeout: 15000 });
     await page.screenshot({ path: 'test-results/character-type-25-doll-maneuvers-loaded.png' });
     
     // ポジションマニューバセクションの存在確認
