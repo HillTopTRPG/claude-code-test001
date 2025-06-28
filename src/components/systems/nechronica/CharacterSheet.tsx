@@ -184,14 +184,15 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onManeuverEd
   // グループの表示順序
   const attachmentOrder = ['position', 'main-class', 'sub-class', 'head', 'arm', 'body', 'leg'];
 
-  // プロフィールからポジション・クラス情報を抽出
+  // プロフィールからポジション・クラス情報を抽出（シンボルアイコン用）
   const extractProfileInfo = () => {
-    if (!character.profile) return { position: '', mainClass: '', subClass: '' };
+    if (!character.profile) return { position: '', mainClass: '', subClass: '', cleanedProfile: '' };
 
     const lines = character.profile.split('\n');
     let position = '';
     let mainClass = '';
     let subClass = '';
+    const cleanedLines: string[] = [];
 
     lines.forEach(line => {
       if (line.includes('ポジション:')) {
@@ -200,13 +201,24 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onManeuverEd
         mainClass = line.replace('メインクラス:', '').trim();
       } else if (line.includes('サブクラス:')) {
         subClass = line.replace('サブクラス:', '').trim();
+      } else {
+        // ポジション・クラス情報以外の行は保持
+        const trimmedLine = line.trim();
+        if (trimmedLine) {
+          cleanedLines.push(trimmedLine);
+        }
       }
     });
 
-    return { position, mainClass, subClass };
+    return { 
+      position, 
+      mainClass, 
+      subClass, 
+      cleanedProfile: cleanedLines.join('\n')
+    };
   };
 
-  const { position, mainClass, subClass } = extractProfileInfo();
+  const { position, mainClass, subClass, cleanedProfile } = extractProfileInfo();
 
   return (
     <div style={{ padding: '20px' }}>
@@ -234,10 +246,10 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onManeuverEd
             </Space>
           </Col>
           <Col xs={24} md={12}>
-            {character.profile && (
+            {cleanedProfile && (
               <div>
                 <Title level={5}>プロフィール</Title>
-                <Paragraph style={{ margin: 0 }}>{character.profile}</Paragraph>
+                <Paragraph style={{ margin: 0 }}>{cleanedProfile}</Paragraph>
               </div>
             )}
           </Col>
