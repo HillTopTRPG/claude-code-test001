@@ -25,6 +25,7 @@ dist-ssr
 .amplify/artifacts/
 
 # Playwright
-test-results/
-playwright-report/
+tests/results/
+tests/reports/
+tests/.cache/
 playwright/.cache/
