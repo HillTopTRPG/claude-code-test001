@@ -53,26 +53,15 @@ interface RawNechronicaApiData {
 // 基本パーツ名のマッピング（優先順位が高い）
 const basicPartsMapping: Record<string, string> = {
   'のうみそ': 'brain',
-  '脳みそ': 'brain',
   'めだま': 'eye',
-  '眼球': 'eye',
   'あご': 'jaw',
-  '顎': 'jaw',
   'こぶし': 'fist',
-  '拳': 'fist',
   'うで': 'arm',
-  '腕': 'arm',
   'かた': 'shoulder',
-  '肩': 'shoulder',
   'せぼね': 'spine',
-  '背骨': 'spine',
   'はらわた': 'viscera',
-  '内臓': 'viscera',
   'ほね': 'bone',
-  '骨': 'bone',
   'あし': 'leg',
-  '脚': 'leg',
-  '足': 'leg',
 };
 
 /**
@@ -113,27 +102,7 @@ export const getManeuverIconPath = (maneuverName: string, attachment: string): s
  */
 export const getManeuverBackgroundPath = (powerType: string | number): string => {
   const basePath = '/src/components/systems/nechronica/images';
-  const typeNum = Number(powerType);
-
-  // Power_Type値に対応するファイル名
-  const typeMapping: Record<number, string> = {
-    0: '0', // なし
-    1: '1', // 通常
-    2: '2', // 必殺技
-    3: '3', // 行動値増加
-    4: '4', // 補助
-    5: '5', // 妨害
-    6: '6', // 防御/生贄
-    7: '7', // 移動
-  };
-
-  const fileName = typeMapping[typeNum];
-  if (fileName) {
-    return `${basePath}/maneuver-back/${fileName}.png`;
-  }
-
-  // デフォルト（なし）
-  return `${basePath}/maneuver-back/0.png`;
+  return `${basePath}/maneuver-back/${powerType.toString()}.png`;
 };
 
 export const parseNechronicaData = (
