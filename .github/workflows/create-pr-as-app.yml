@@ -55,10 +55,19 @@ jobs:
           
       - name: Create Pull Request
         run: |
-          gh pr create \
+          PR_URL=$(gh pr create \
             --title "${{ inputs.pr_title }}" \
             --body "${{ inputs.pr_body }}" \
             --head "${{ inputs.source_branch }}" \
-            --base main
+            --base main)
+          
+          # Extract PR number from URL
+          PR_NUMBER=$(echo "$PR_URL" | grep -o '[0-9]*$')
+          
+          # Add repository owner as reviewer
+          gh pr edit "$PR_NUMBER" --add-reviewer "${{ github.repository_owner }}"
+          
+          echo "✅ PR created: $PR_URL"
+          echo "✅ Added ${{ github.repository_owner }} as reviewer"
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
