@@ -242,12 +242,75 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
 
   const { position, mainClass, subClass, cleanedProfile } = extractProfileInfo();
 
+  // ポジション名からファイル名への変換（CharacterSymbolIconsと同じロジック）
+  const getPositionIconPath = (positionName: string): string => {
+    const basePath = '/src/components/systems/nechronica/images/position';
+
+    const positionMapping: Record<string, string> = {
+      'アリス': 'alice',
+      'オートマトン': 'automaton',
+      'コート': 'court',
+      'ホリック': 'holic',
+      'ジャンク': 'junk',
+      'ソロリティ': 'sorority',
+    };
+
+    const fileName = positionMapping[positionName];
+    return fileName ? `${basePath}/${fileName}.png` : `${basePath}/alice.png`;
+  };
+
+  // メインビジュアルの画像パスを取得
+  const getMainVisualPath = () => {
+    const characterType = character.characterType;
+    
+    if (characterType === 'doll') {
+      // ドールの場合はポジションの画像を使用（既存ロジックを利用）
+      return getPositionIconPath(position);
+    } else if (characterType && ['savant', 'horror', 'legion'].includes(characterType)) {
+      // サヴァント、ホラー、レギオンの場合はtypeディレクトリの画像を使用
+      return `/src/components/systems/nechronica/images/type/${characterType}.png`;
+    }
+    
+    // デフォルトは不明画像
+    return `/src/components/systems/nechronica/images/unknown.png`;
+  };
+
   return (
     <div style={{ padding: '20px' }}>
       {/* キャラクター基本情報 */}
       <Card style={{ marginBottom: '20px' }}>
         <Row gutter={[16, 16]} align="middle">
-          <Col xs={24} md={12}>
+          <Col xs={24} md={8}>
+            {/* メインビジュアル */}
+            <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+              <img
+                src={getMainVisualPath()}
+                alt={`${character.name} - ${character.characterType || 'キャラクター'}`}
+                style={{
+                  width: '120px',
+                  height: '120px',
+                  objectFit: 'contain',
+                  borderRadius: '8px',
+                  border: '2px solid #722ed1',
+                  backgroundColor: '#fafafa',
+                }}
+                onError={(e) => {
+                  e.currentTarget.src = '/src/components/systems/nechronica/images/unknown.png';
+                }}
+              />
+              {character.characterType && (
+                <div style={{ marginTop: '8px' }}>
+                  <Tag color="purple" style={{ fontSize: '12px' }}>
+                    {character.characterType === 'doll' ? 'ドール' :
+                     character.characterType === 'savant' ? 'サヴァント' :
+                     character.characterType === 'horror' ? 'ホラー' :
+                     character.characterType === 'legion' ? 'レギオン' : character.characterType}
+                  </Tag>
+                </div>
+              )}
+            </div>
+          </Col>
+          <Col xs={24} md={8}>
             <div
               style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '10px' }}
             >
@@ -267,7 +330,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
               {character.weight && <Text type="secondary">体重: {character.weight}</Text>}
             </Space>
           </Col>
-          <Col xs={24} md={12}>
+          <Col xs={24} md={8}>
             {cleanedProfile && (
               <div>
                 <Title level={5}>プロフィール</Title>
@@ -624,7 +687,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({
                                 }}
                               >
                                 <img
-                                  src={getManeuverIconPath(maneuver.name, attachment)}
+                                  src={getManeuverIconPath(maneuver.name, attachment, character)}
                                   alt={maneuver.name}
                                   style={{
                                     width: '48px',

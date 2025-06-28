@@ -1,8 +1,11 @@
 // 永い後日談のネクロニカ用の型定義
 
+export type CharacterType = 'doll' | 'savant' | 'horror' | 'legion';
+
 export interface NechronicaCharacter {
   // 基本情報
   name: string;
+  characterType?: CharacterType; // キャラクター種別
   age?: string;
   height?: string;
   weight?: string;

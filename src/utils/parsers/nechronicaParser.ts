@@ -64,11 +64,86 @@ const basicPartsMapping: Record<string, string> = {
   'あし': 'leg',
 };
 
+// ポジション名からファイル名への変換（CharacterSymbolIconsと同じロジック）
+const getPositionIconPath = (positionName: string): string => {
+  const basePath = '/src/components/systems/nechronica/images/position';
+
+  const positionMapping: Record<string, string> = {
+    'アリス': 'alice',
+    'オートマトン': 'automaton',
+    'コート': 'court',
+    'ホリック': 'holic',
+    'ジャンク': 'junk',
+    'ソロリティ': 'sorority',
+  };
+
+  const fileName = positionMapping[positionName];
+  return fileName ? `${basePath}/${fileName}.png` : `${basePath}/alice.png`;
+};
+
+// クラス名からファイル名への変換（CharacterSymbolIconsと同じロジック）
+const getClassIconPath = (className: string): string => {
+  const basePath = '/src/components/systems/nechronica/images/class';
+
+  const classMapping: Record<string, string> = {
+    'バロック': 'baroque',
+    'ゴシック': 'gothic',
+    'サイケデリック': 'psychedelic',
+    'レクイエム': 'requiem',
+    'ロマネスク': 'romanesque',
+    'ステイシー': 'stacy',
+    'タナトス': 'thanatos',
+  };
+
+  const fileName = classMapping[className];
+  return fileName ? `${basePath}/${fileName}.png` : `${basePath}/gothic.png`;
+};
+
 /**
  * マニューバのアイコン画像パスを取得する関数
  */
-export const getManeuverIconPath = (maneuverName: string, attachment: string): string => {
+export const getManeuverIconPath = (
+  maneuverName: string, 
+  attachment: string, 
+  character?: { 
+    profile?: string;
+    characterType?: string;
+  }
+): string => {
   const basePath = '/src/components/systems/nechronica/images';
+
+  // キャラクター種別がドールかつ、ポジション・クラス系の部位の場合は専用画像を使用
+  if (character?.characterType === 'doll' && character?.profile) {
+    const lines = character.profile.split('\n');
+    let position = '';
+    let mainClass = '';
+    let subClass = '';
+
+    lines.forEach(line => {
+      if (line.includes('ポジション:')) {
+        position = line.replace('ポジション:', '').trim();
+      } else if (line.includes('メインクラス:')) {
+        mainClass = line.replace('メインクラス:', '').trim();
+      } else if (line.includes('サブクラス:')) {
+        subClass = line.replace('サブクラス:', '').trim();
+      }
+    });
+
+    // ポジションマニューバの場合はポジション画像を使用
+    if (attachment === 'position' && position) {
+      return getPositionIconPath(position);
+    }
+    
+    // メインクラスマニューバの場合はクラス画像を使用
+    if (attachment === 'main-class' && mainClass) {
+      return getClassIconPath(mainClass);
+    }
+    
+    // サブクラスマニューバの場合はクラス画像を使用
+    if (attachment === 'sub-class' && subClass) {
+      return getClassIconPath(subClass);
+    }
+  }
 
   // 基本パーツのチェック（優先）
   for (const [partName, fileName] of Object.entries(basicPartsMapping)) {

@@ -270,6 +270,40 @@ git commit --author="Claude AI <claude@anthropic.com>" -m "コミットメッセ
 - ユーザーアカウントでのPR作成は絶対に行わないでください
 - `gh pr create`の直接使用は避け、必ずスクリプトを使用してください
 
+#### 3. UI変更時のスクリーンショット追加（必須）
+
+UIに変化がある場合は、**必ず**PRにスクリーンショットを添付してください：
+
+**画像保存場所**：GitHub Releaseを使用
+1. Playwrightテストでスクリーンショットを生成
+2. GitHub Releaseにアップロード
+3. リリースのダウンロードURLを使用
+
+**PR記述形式**：修正前後を2列で並べて比較しやすくする
+```markdown
+## 修正前後の比較
+
+| 修正前 | 修正後 |
+|:---:|:---:|
+| [![修正前](https://github.com/owner/repo/releases/download/screenshots-YYYYMMDD-HHMMSS/before.png)](https://github.com/owner/repo/releases/download/screenshots-YYYYMMDD-HHMMSS/before.png) | [![修正後](https://github.com/owner/repo/releases/download/screenshots-YYYYMMDD-HHMMSS/after.png)](https://github.com/owner/repo/releases/download/screenshots-YYYYMMDD-HHMMSS/after.png) |
+
+## 主な変更点
+- 具体的な変更内容を箇条書きで記載
+```
+
+**スクリーンショット生成手順**：
+1. Playwrightテストを作成・実行
+2. 生成されたスクリーンショットをGitHub Releaseにアップロード
+```bash
+gh release create screenshots-$(date +%Y%m%d-%H%M%S) screenshot1.png screenshot2.png --title "Screenshots for Feature" --notes "Description"
+```
+
+**画像撮影の指針**：
+- 変更された機能・UI部分を中心に撮影
+- 可能な限り同じ画面・同じ操作状態で比較
+- 画像サイズは適度に（横幅800px程度を推奨）
+- ファイル名は機能名を含む分かりやすい名前を使用
+
 #### 3. ファイル管理ルール
 
 **テスト関連ファイル**：
