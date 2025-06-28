@@ -1,5 +1,7 @@
 import React from 'react';
-import { Space } from 'antd';
+import { Space, Typography } from 'antd';
+
+const { Text } = Typography;
 
 interface CharacterSymbolIconsProps {
   position?: string;
@@ -95,51 +97,74 @@ const CharacterSymbolIcons: React.FC<CharacterSymbolIconsProps> = ({
   const displayIcons = getDisplayIcons();
 
   return (
-    <Space size="small" align="center">
+    <Space size="medium" align="start">
       {displayIcons.map((icon, index) => (
         <div
           key={`${icon.type}-${index}`}
           style={{
-            position: 'relative',
-            display: 'inline-block',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '8px',
           }}
-          title={icon.name}
         >
-          <img
-            src={icon.path}
-            alt={icon.name}
-            style={{
-              width: iconSize,
-              height: iconSize,
-              objectFit: 'contain',
-              border: icon.type === 'position' ? '3px solid #722ed1' : '2px solid #13c2c2',
-              borderRadius: '8px',
-              backgroundColor: '#fff',
-              padding: '4px',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-            }}
-            onError={e => {
-              // 画像読み込みエラー時のフォールバック
-              const fallbackPath =
-                icon.type === 'position'
-                  ? '/src/components/systems/nechronica/images/position/alice.png'
-                  : '/src/components/systems/nechronica/images/class/gothic.png';
-              e.currentTarget.src = fallbackPath;
-            }}
-          />
-          {/* タイプ識別用の小さなマーカー */}
           <div
             style={{
-              position: 'absolute',
-              bottom: -2,
-              right: -2,
-              width: 12,
-              height: 12,
-              borderRadius: '50%',
-              backgroundColor: icon.type === 'position' ? '#722ed1' : '#13c2c2',
-              border: '2px solid #fff',
+              position: 'relative',
+              display: 'inline-block',
             }}
-          />
+            title={icon.name}
+          >
+            <img
+              src={icon.path}
+              alt={icon.name}
+              style={{
+                width: iconSize,
+                height: iconSize,
+                objectFit: 'contain',
+                border: icon.type === 'position' ? '3px solid #722ed1' : '2px solid #13c2c2',
+                borderRadius: '8px',
+                backgroundColor: '#fff',
+                padding: '4px',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+              }}
+              onError={e => {
+                // 画像読み込みエラー時のフォールバック
+                const fallbackPath =
+                  icon.type === 'position'
+                    ? '/src/components/systems/nechronica/images/position/alice.png'
+                    : '/src/components/systems/nechronica/images/class/gothic.png';
+                e.currentTarget.src = fallbackPath;
+              }}
+            />
+            {/* タイプ識別用の小さなマーカー */}
+            <div
+              style={{
+                position: 'absolute',
+                bottom: -2,
+                right: -2,
+                width: 12,
+                height: 12,
+                borderRadius: '50%',
+                backgroundColor: icon.type === 'position' ? '#722ed1' : '#13c2c2',
+                border: '2px solid #fff',
+              }}
+            />
+          </div>
+          {/* ラベル */}
+          <Text
+            style={{
+              fontSize: '12px',
+              fontWeight: 500,
+              textAlign: 'center',
+              color: icon.type === 'position' ? '#722ed1' : '#13c2c2',
+              lineHeight: '1.2',
+              maxWidth: iconSize + 20,
+              wordBreak: 'break-all',
+            }}
+          >
+            {icon.name}
+          </Text>
         </div>
       ))}
     </Space>
