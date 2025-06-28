@@ -23,3 +23,8 @@ dist-ssr
 *.sln
 *.sw?
 .amplify/artifacts/
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
