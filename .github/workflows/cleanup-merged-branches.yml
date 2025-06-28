@@ -1,0 +1,47 @@
+name: Cleanup Merged Branches
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  cleanup:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Delete merged branch
+        run: |
+          BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
+          REPO_OWNER="${{ github.repository_owner }}"
+          REPO_NAME="${{ github.event.repository.name }}"
+          
+          echo "🔍 PR #${{ github.event.pull_request.number }} was merged"
+          echo "🌿 Branch to delete: $BRANCH_NAME"
+          
+          # メインブランチ（main, master）は削除しない
+          if [[ "$BRANCH_NAME" == "main" || "$BRANCH_NAME" == "master" ]]; then
+            echo "⚠️  Skipping deletion of main branch: $BRANCH_NAME"
+            exit 0
+          fi
+          
+          # developブランチも削除しない
+          if [[ "$BRANCH_NAME" == "develop" ]]; then
+            echo "⚠️  Skipping deletion of develop branch: $BRANCH_NAME"
+            exit 0
+          fi
+          
+          # リモートブランチを削除
+          echo "🗑️  Deleting remote branch: $BRANCH_NAME"
+          gh api \
+            --method DELETE \
+            /repos/$REPO_OWNER/$REPO_NAME/git/refs/heads/$BRANCH_NAME || {
+            echo "❌ Failed to delete branch $BRANCH_NAME (may already be deleted)"
+            exit 0
+          }
+          
+          echo "✅ Successfully deleted branch: $BRANCH_NAME"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
