@@ -145,5 +145,4 @@ const CharacterSymbolIcons: React.FC<CharacterSymbolIconsProps> = ({
     </Space>
   );
 };
-
 export default CharacterSymbolIcons;
